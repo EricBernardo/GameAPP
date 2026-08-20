@@ -1,0 +1,14 @@
+{
+  "name": "party-royale-ios",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Empacotamento nativo iOS (Capacitor) do protótipo Party Royale — Conceito A da auditoria.",
+  "dependencies": {
+    "@capacitor/cli": "^6.2.1",
+    "@capacitor/core": "^6.2.1",
+    "@capacitor/ios": "^6.2.1"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5"
+  }
+}

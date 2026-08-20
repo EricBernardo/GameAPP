@@ -1,0 +1,70 @@
+name: Build iOS app (Party Royale)
+
+# Só é possível compilar apps iOS em uma máquina macOS com Xcode — por isso
+# este workflow roda em um runner "macos-latest" do GitHub Actions (que já
+# vem com Xcode e CocoaPods instalados), já que o ambiente de desenvolvimento
+# principal deste repositório é Linux e não tem essas ferramentas disponíveis.
+#
+# Este build é para o Simulador de iOS (sem assinatura de código) — prova que
+# o app compila de ponta a ponta, mas NÃO gera um .ipa instalável em um
+# iPhone físico. Instalar em um iPhone real exige assinatura com um Apple ID
+# (gratuito, mas só funciona por 7 dias e precisa do Xcode em um Mac) ou uma
+# conta Apple Developer paga + TestFlight para distribuição real. Ver
+# README.md desta pasta para detalhes.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "mobile/party-royale-ios/**"
+      - "prototype/party-royale/**"
+      - ".github/workflows/ios-build.yml"
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        working-directory: mobile/party-royale-ios
+        run: npm install
+
+      - name: Sync latest web assets from prototype
+        run: |
+          rm -rf mobile/party-royale-ios/www
+          mkdir -p mobile/party-royale-ios/www
+          cp -r prototype/party-royale/. mobile/party-royale-ios/www/
+
+      - name: Capacitor sync (copia web + pod install)
+        working-directory: mobile/party-royale-ios
+        run: npx cap sync ios
+
+      - name: Build for iOS Simulator (sem assinatura de código)
+        working-directory: mobile/party-royale-ios/ios/App
+        run: |
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Compactar o .app resultante
+        working-directory: mobile/party-royale-ios/ios/App/build/Build/Products/Debug-iphonesimulator
+        run: zip -r PartyRoyale-simulator.zip App.app
+
+      - name: Upload do build (Simulador)
+        uses: actions/upload-artifact@v4
+        with:
+          name: party-royale-ios-simulator
+          path: mobile/party-royale-ios/ios/App/build/Build/Products/Debug-iphonesimulator/PartyRoyale-simulator.zip
+          retention-days: 30
