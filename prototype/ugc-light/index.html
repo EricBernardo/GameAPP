@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>Corrida Criativa — Protótipo UGC</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+
+    <!-- LISTA DE NÍVEIS -->
+    <section id="view-list" class="view">
+      <header class="topbar">
+        <h1>Corrida Criativa</h1>
+        <button id="btn-avatar" class="icon-btn" title="Personalizar avatar">👤</button>
+      </header>
+      <p class="subtitle">Crie sua própria fase de obstáculos e jogue as fases de outros jogadores (protótipo local, sem servidor ainda).</p>
+      <button id="btn-new-level" class="btn-primary">+ CRIAR NOVA FASE</button>
+      <div id="level-list"></div>
+    </section>
+
+    <!-- EDITOR -->
+    <section id="view-editor" class="view hidden">
+      <header class="topbar">
+        <button id="btn-editor-back" class="icon-btn">←</button>
+        <h2>Editor de Fase</h2>
+        <button id="btn-editor-save" class="icon-btn save">Salvar</button>
+      </header>
+      <div id="palette"></div>
+      <div id="canvas-wrap">
+        <canvas id="editor-canvas"></canvas>
+      </div>
+      <div class="editor-actions">
+        <button id="btn-editor-clear" class="btn-secondary">Limpar tudo</button>
+        <button id="btn-editor-test" class="btn-primary">▶ TESTAR FASE</button>
+      </div>
+    </section>
+
+    <!-- JOGO -->
+    <section id="view-play" class="view hidden">
+      <div id="play-hud">
+        <button id="btn-play-back" class="icon-btn">←</button>
+        <div class="hud-pill">🪙 <span id="play-coins">0</span></div>
+        <div class="hud-pill">💀 <span id="play-deaths">0</span></div>
+      </div>
+      <div id="canvas-wrap-play">
+        <canvas id="play-canvas"></canvas>
+      </div>
+      <div id="play-controls">
+        <div id="dpad">
+          <button id="btn-left" class="pad-btn">◀</button>
+          <button id="btn-right" class="pad-btn">▶</button>
+        </div>
+        <button id="btn-jump" class="pad-btn jump-btn">⤒</button>
+      </div>
+    </section>
+
+    <!-- TELA DE VITÓRIA -->
+    <section id="view-win" class="view hidden screen">
+      <h1>FASE COMPLETA!</h1>
+      <p id="win-stats" class="subtitle">0 moedas coletadas · 0 quedas</p>
+      <div class="win-actions">
+        <button id="btn-win-retry" class="btn-secondary">JOGAR DE NOVO</button>
+        <button id="btn-win-back" class="btn-primary">VOLTAR À LISTA</button>
+      </div>
+    </section>
+
+    <!-- MODAL: nome da fase -->
+    <div id="modal-name" class="modal hidden">
+      <div class="modal-box">
+        <h3>Nome da fase</h3>
+        <input id="input-level-name" type="text" maxlength="24" placeholder="Ex: Pulos Loucos" />
+        <div class="modal-actions">
+          <button id="btn-name-cancel" class="btn-secondary">Cancelar</button>
+          <button id="btn-name-confirm" class="btn-primary">Salvar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: avatar -->
+    <div id="modal-avatar" class="modal hidden">
+      <div class="modal-box">
+        <h3>Cor do seu personagem</h3>
+        <div id="avatar-colors"></div>
+        <div class="modal-actions">
+          <button id="btn-avatar-close" class="btn-primary">PRONTO</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast"></div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
