@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>Puzzle Duelo — Protótipo</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <div id="hud">
+      <div id="hud-timer">90s</div>
+      <div id="hud-score">
+        <span id="hud-score-label">Pontos</span>
+        <span id="hud-score-value">0</span>
+      </div>
+      <div id="hud-combo"></div>
+    </div>
+
+    <div id="race-track">
+      <div id="race-you-label">Você</div>
+      <div id="race-bar">
+        <div id="race-you" class="race-marker"></div>
+        <div id="race-rival" class="race-marker rival"></div>
+      </div>
+      <div id="race-rival-label">Nino (rival)</div>
+    </div>
+
+    <div id="board-wrap">
+      <canvas id="board"></canvas>
+    </div>
+
+    <div id="screen-start" class="screen">
+      <h1>PUZZLE DUELO</h1>
+      <p class="subtitle">Protótipo do Conceito B — combine 3 ou mais e vença a pontuação do seu rival antes do tempo acabar</p>
+      <button id="btn-play" class="btn-primary">JOGAR</button>
+      <p class="hint">Toque em uma peça e depois em uma vizinha para trocar.<br />Combos em cadeia valem mais pontos.</p>
+    </div>
+
+    <div id="screen-end" class="screen hidden">
+      <h1 id="end-title">VITÓRIA!</h1>
+      <p id="end-subtitle" class="subtitle">Você venceu o duelo.</p>
+      <p id="end-score" class="coins-earned">0 pontos</p>
+      <button id="btn-restart" class="btn-primary">JOGAR DE NOVO</button>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
