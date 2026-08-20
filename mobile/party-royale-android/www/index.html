@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>Party Royale — Protótipo</title>
+<link rel="stylesheet" href="style.css" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="icon" href="icon-192.png" />
+<meta name="theme-color" content="#ff5f6d" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Party Royale" />
+</head>
+<body>
+  <div id="app">
+    <canvas id="game"></canvas>
+
+    <div id="hud">
+      <div id="hud-timer">60</div>
+      <div id="hud-alive">Vivos: 12</div>
+      <div id="hud-coins">🪙 0</div>
+    </div>
+
+    <div id="toast"></div>
+
+    <div id="controls">
+      <div id="joystick-zone">
+        <div id="joystick-base">
+          <div id="joystick-stick"></div>
+        </div>
+      </div>
+      <button id="dash-btn">DASH</button>
+    </div>
+
+    <div id="screen-start" class="screen">
+      <h1>PARTY ROYALE</h1>
+      <p class="subtitle">Protótipo de conceito — último na arena vence</p>
+      <button id="btn-play" class="btn-primary">JOGAR</button>
+      <p class="hint">
+        Celular: arraste no joystick para se mover, toque em DASH para empurrar.<br />
+        Computador: setas/WASD para mover, ESPAÇO para dash.
+      </p>
+    </div>
+
+    <div id="screen-end" class="screen hidden">
+      <h1 id="end-title">VITÓRIA!</h1>
+      <p id="end-subtitle" class="subtitle">Você foi o último a cair.</p>
+      <p id="end-coins" class="coins-earned">+0 🪙</p>
+      <button id="btn-restart" class="btn-primary">JOGAR DE NOVO</button>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+    }
+  </script>
+</body>
+</html>

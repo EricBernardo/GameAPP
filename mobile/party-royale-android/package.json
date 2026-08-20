@@ -1,0 +1,18 @@
+{
+  "name": "party-royale-android",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Empacotamento nativo Android (Capacitor) do protótipo Party Royale — Conceito A da auditoria.",
+  "scripts": {
+    "sync": "cap sync android",
+    "build:debug": "cd android && ./gradlew assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.1",
+    "@capacitor/cli": "^6.2.1",
+    "@capacitor/core": "^6.2.1"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5"
+  }
+}
