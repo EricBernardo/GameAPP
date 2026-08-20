@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>Blefe em Grupo — Protótipo</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+
+    <section id="screen-setup" class="screen">
+      <h1>BLEFE EM GRUPO</h1>
+      <p class="subtitle">Protótipo do Conceito G — passem o celular entre os amigos. Escreva respostas falsas convincentes, adivinhe a verdadeira, e ganhe pontos enganando os outros!</p>
+      <div id="player-inputs"></div>
+      <button id="btn-add-player" class="btn-secondary">+ Adicionar jogador</button>
+      <button id="btn-start-game" class="btn-primary">COMEÇAR (mín. 2 jogadores)</button>
+    </section>
+
+    <section id="screen-interstitial" class="screen hidden">
+      <div class="pass-icon">📱</div>
+      <h2 id="interstitial-title">Passe o celular para</h2>
+      <p id="interstitial-name" class="big-name">Nome</p>
+      <p id="interstitial-hint" class="subtitle">Não deixe os outros verem a tela!</p>
+      <button id="btn-interstitial-continue" class="btn-primary">ESTOU PRONTO(A)</button>
+    </section>
+
+    <section id="screen-bluff" class="screen hidden">
+      <div class="question-tag" id="bluff-category">Categoria</div>
+      <h2 id="bluff-question" class="question-text">Pergunta?</h2>
+      <p class="subtitle">Escreva uma resposta FALSA, mas convincente, pra tentar enganar os outros.</p>
+      <input id="bluff-input" type="text" maxlength="40" placeholder="Sua resposta falsa..." />
+      <button id="btn-bluff-submit" class="btn-primary">ENVIAR BLEFE</button>
+    </section>
+
+    <section id="screen-vote" class="screen hidden">
+      <div class="question-tag" id="vote-category">Categoria</div>
+      <h2 id="vote-question" class="question-text">Pergunta?</h2>
+      <p class="subtitle">Qual dessas você acha que é a resposta VERDADEIRA?</p>
+      <div id="vote-options"></div>
+    </section>
+
+    <section id="screen-reveal" class="screen hidden">
+      <h2>Resultado da rodada</h2>
+      <div id="reveal-list"></div>
+      <button id="btn-reveal-continue" class="btn-primary">CONTINUAR</button>
+    </section>
+
+    <section id="screen-scoreboard" class="screen hidden">
+      <h2 id="scoreboard-title">Placar</h2>
+      <div id="scoreboard-list"></div>
+      <button id="btn-next-round" class="btn-primary">PRÓXIMA PERGUNTA</button>
+    </section>
+
+    <section id="screen-final" class="screen hidden">
+      <h1>🏆 FIM DE JOGO!</h1>
+      <p id="final-winner" class="big-name">Vencedor</p>
+      <div id="final-list"></div>
+      <button id="btn-play-again" class="btn-primary">JOGAR DE NOVO</button>
+    </section>
+
+    <div id="toast"></div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
