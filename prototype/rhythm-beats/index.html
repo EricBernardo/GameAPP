@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>Batidas — Protótipo</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+
+    <section id="view-menu" class="view">
+      <h1>BATIDAS</h1>
+      <p class="subtitle">Protótipo do Conceito F — jogo de ritmo sem gacha: tudo se desbloqueia jogando, nada por sorteio.</p>
+      <div id="coins-pill">🎵 <span id="coins-value">0</span> notas</div>
+      <div id="song-list"></div>
+      <button id="btn-shop" class="btn-secondary">🎨 Loja de temas visuais</button>
+    </section>
+
+    <section id="view-play" class="view hidden">
+      <div id="play-hud">
+        <button id="btn-play-quit" class="icon-btn">←</button>
+        <div class="hud-pill" id="hud-score">0</div>
+        <div class="hud-pill" id="hud-combo"></div>
+      </div>
+      <div id="lanes-wrap">
+        <canvas id="lanes-canvas"></canvas>
+      </div>
+      <div id="tap-row"></div>
+    </section>
+
+    <section id="view-result" class="view hidden screen">
+      <h1 id="result-grade">S</h1>
+      <p id="result-stats" class="subtitle">100% de acerto</p>
+      <p id="result-coins" class="coins-earned">+0 🎵</p>
+      <div class="result-actions">
+        <button id="btn-result-retry" class="btn-secondary">JOGAR DE NOVO</button>
+        <button id="btn-result-menu" class="btn-primary">MENU</button>
+      </div>
+    </section>
+
+    <section id="view-shop" class="view hidden">
+      <header class="topbar">
+        <button id="btn-shop-back" class="icon-btn">←</button>
+        <h2>Temas visuais</h2>
+        <div id="shop-coins">🎵 0</div>
+      </header>
+      <div id="theme-list"></div>
+    </section>
+
+    <div id="toast"></div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
