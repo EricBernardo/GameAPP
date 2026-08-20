@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>Jardim de Criaturas — Protótipo</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <header id="topbar">
+      <div class="gems-pill">💎 <span id="gems-value">0</span></div>
+      <div class="rate-pill">⚡ <span id="rate-value">0</span>/s</div>
+    </header>
+
+    <div id="boost-row">
+      <button id="btn-boost" class="btn-secondary">🎬 Assistir anúncio (2x por 60s)</button>
+      <span id="boost-status"></span>
+    </div>
+
+    <div id="tap-area">
+      <button id="btn-tap">
+        <span id="tap-icon">💎</span>
+        <span id="tap-label">TOCAR PARA COLETAR</span>
+      </button>
+    </div>
+
+    <div id="creature-list"></div>
+
+    <div id="offline-modal" class="modal hidden">
+      <div class="modal-box">
+        <h2>Bem-vindo de volta! 👋</h2>
+        <p id="offline-text">Suas criaturas trabalharam enquanto você estava fora.</p>
+        <p id="offline-amount" class="offline-amount">+0 💎</p>
+        <div class="modal-actions">
+          <button id="btn-offline-collect" class="btn-secondary">Coletar</button>
+          <button id="btn-offline-double" class="btn-primary">🎬 Dobrar (assistir anúncio)</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast"></div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
