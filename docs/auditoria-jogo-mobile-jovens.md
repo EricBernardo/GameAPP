@@ -136,7 +136,7 @@ Benchmarks de CPI (2026, referência global/Tier 1): hipercasual Android US$ 0,3
 
 ## 10. Conceitos de jogo propostos
 
-Três conceitos, todos alinhados aos padrões de sucesso identificados (entrada fácil, sessão curta, social leve, monetização cosmética, baixo custo de produção inicial):
+Sete conceitos (A–G), todos alinhados aos padrões de sucesso identificados (entrada fácil, sessão curta, social leve, monetização cosmética, baixo custo de produção inicial). Os três primeiros (A–C) foram a proposta inicial; D–G foram adicionados para cobrir públicos e gêneros que A–C não cobrem (ex.: público mais casual/feminino, sessões passivas, cultura de criador de música, jogos para grupos de amigos presencialmente).
 
 ### Conceito A — "Party Royale" casual (recomendado como primeira aposta)
 Arena de eliminação estilo Stumble Guys/Fall Guys, partidas de 2–3 minutos, até 16–32 jogadores (ou bots preenchendo vagas no início), física exagerada e cômica (alto potencial de "clipe engraçado" para TikTok). Progressão via cosméticos de personagem. Multiplayer leve via servidor simples (ex.: Photon, Nakama ou backend próprio minimalista).
@@ -153,16 +153,41 @@ Um jogo-base simples (ex.: corrida, decoração de espaço, customização de av
 - **Motor sugerido:** Unity (ferramentas de editor em runtime são mais maduras) ou motor customizado leve.
 - **Risco:** maior complexidade de produto e moderação de conteúdo gerado por usuários (segurança infantil, moderação de texto/imagem) — exige investimento extra em ferramentas de moderação desde o dia 1 por conta da base de usuários jovem.
 
+### Conceito D — Simulação "cozy" de vida/decoração
+Jogo de simulação leve e relaxante (decorar uma casa, cuidar de um jardim/loja, gerenciar uma fazenda pequena), no estilo Gossip Harbor/Heartopia/Township. Este é hoje o gênero de **maior crescimento sustentado** identificado nesta auditoria: simulação lidera downloads em ambas as lojas, cresceu 18% em receita de IAP ano a ano (superando ação e estratégia pelo segundo ano consecutivo), e o subgênero "Life Sim" cresceu 76% em receita e 30% em downloads apenas no primeiro semestre de 2026 (referência: Heartopia, lançado em janeiro de 2026, já entrou no top 3 de receita do gênero). É também o gênero mais associado ao público feminino jovem, hoje uma parcela relevante e sub-atendida pelos Conceitos A–C (mais orientados a ação/competição).
+- **Motor sugerido:** Godot 2D/3D estilizado (arte de baixo custo, foco em UI/decoração, não em física ou netcode).
+- **Monetização:** cosméticos de decoração/roupas com preço fixo, "passe" sazonal com conteúdo visível, sem gacha. CPI historicamente mais baixo que ação/estratégia, com jogadores mais fiéis (menos rotatividade).
+- **Risco:** exige produção de conteúdo visual constante (itens de decoração, roupas, eventos temáticos) para sustentar retenção de longo prazo — maior dependência de arte/conteúdo do que os outros conceitos.
+
+### Conceito E — Colecionável "idle" de criaturas fofas
+Jogo de progressão passiva (idle/incremental): o jogador coleciona, evolui e organiza criaturas ou personagens fofos que rendem recursos com o tempo, mesmo com o app fechado. Sessões ativas curtas (checar, coletar, comprar upgrade) e recompensa por retorno recorrente. O gênero idle evoluiu de "hipercasual descartável" para modelos híbridos com meta-progressão de longo prazo — os melhores títulos de 2026 medem retenção D30 de 5–10%, bem acima da média do mercado mobile em geral (abaixo de 3%).
+- **Motor sugerido:** Godot 2D ou até um app leve (Flutter/Flame), já que a exigência gráfica é baixa.
+- **Monetização:** IAP de "compressão de tempo" (acelerar progresso, colecionáveis extras por compra direta e visível — não por caixa aleatória) + anúncios recompensados opcionais para multiplicar recompensas. Modelo bem alinhado à Lei Felca por não depender de randomização paga.
+- **Risco:** o gênero é competitivo e às vezes visto como "sem profundidade"; precisa de um tema/arte com identidade forte (mascotes fofos e colecionáveis têm apelo comprovado com Gen Alpha) para se diferenciar.
+
+### Conceito F — Jogo de ritmo musical (sem gacha)
+Jogo de ritmo (tocar/tocar em tempo com a música, estilo "piano tiles" evoluído) com trilha voltada a tendências do TikTok e músicas licenciadas/originais. O gênero de ritmo é hoje fortemente ligado à cultura de criadores e fandom (K-pop, VTubers, anime) e gera engajamento por conteúdo de artista exclusivo. **Atenção:** os líderes atuais do gênero (Rhythm Hive, D4DJ, Project Sekai) monetizam majoritariamente via cartas/personagens em sistema gacha — o que **entra em conflito direto com a Lei Felca e a COPPA** para o público jovem (seção 6). A recomendação aqui é uma versão sem gacha: desbloqueio de músicas e personagens por progressão determinística (não randômica), com cosméticos de preço fixo.
+- **Motor sugerido:** Unity (melhor precisão de timing de áudio/input em mobile) ou Godot com testes cuidadosos de latência de áudio.
+- **Monetização:** desbloqueio de trilhas/personagens por compra direta ou progressão, passe de temporada, sem loot box de personagens.
+- **Risco:** maior custo de licenciamento musical se depender de músicas conhecidas; viável com música original/royalty-free e parcerias com criadores emergentes em vez de grandes labels no MVP.
+
+### Conceito G — Festa social de blefe/trivia entre amigos
+Jogo de festa (2 a 20 jogadores, cada um no próprio celular) com rodadas curtas (10–15 minutos) de perguntas/trivia onde os jogadores escrevem respostas falsas convincentes para enganar os amigos e pontuam por acertar a real ou por enganar os outros (mecânica de "blefe social", como Zarta!/BLFFD/Jackbox). Pensado para ser jogado presencialmente (em uma sala de aula, festa, viagem) ou remotamente com amigos. É o conceito de **menor complexidade técnica e menor risco regulatório** de todos os sete, pois não depende de física em tempo real nem de progressão monetizável agressiva — o valor está inteiramente na interação social entre amigos reais.
+- **Motor sugerido:** qualquer stack simples (Godot, Flutter, ou até web app) — o desafio técnico real é sincronização de sala (ex.: Firebase/Supabase Realtime, ou WebSocket simples), não gráficos.
+- **Monetização:** anúncios entre rodadas + pacotes de categorias/temas extras de perguntas (compra direta, sem randomização). Modelo de baixíssimo custo de produção contínua se a comunidade puder sugerir/votar perguntas.
+- **Risco:** menor potencial de sessão "sozinho" (depende de ter amigos jogando ao mesmo tempo), o que exige um bom mecanismo de convite/compartilhamento de sala para crescer; potencial viral menor em vídeo curto do que os conceitos de ação (A) ou ritmo (F), mas mais forte em retenção de grupo/boca a boca real.
+
 ### Matriz de priorização
 
-| Critério (peso) | A — Party Royale | B — Puzzle Social | C — UGC Light |
-|---|---|---|---|
-| Alinhamento com tendência de mercado | Alto | Alto | Médio |
-| Custo/tempo de MVP | Médio | Baixo | Alto |
-| Potencial viral orgânico (TikTok/YouTube) | Alto | Médio | Médio-Alto |
-| Complexidade técnica (rede, moderação) | Média-Alta | Baixa | Alta |
-| Risco regulatório | Baixo | Baixo | Médio (moderação de UGC) |
-| **Recomendação** | **Validar primeiro (MVP mais barato: modo 1 mapa, bots)** | Alternativa de baixo risco/baixo custo | Ambição de longo prazo, não para MVP |
+| Critério | A — Party Royale | B — Puzzle Social | C — UGC Light | D — Cozy Sim | E — Idle Collector | F — Ritmo Musical | G — Festa/Trivia |
+|---|---|---|---|---|---|---|---|
+| Alinhamento com tendência de mercado | Alto | Alto | Médio | Muito alto (maior crescimento) | Médio-Alto | Alto (nicho fandom) | Médio |
+| Custo/tempo de MVP | Médio | Baixo | Alto | Médio (depende de arte) | Baixo | Médio-Alto (áudio/licenciamento) | Baixo |
+| Potencial viral orgânico (TikTok/YouTube) | Alto | Médio | Médio-Alto | Médio | Baixo-Médio | Alto (cultura de fandom) | Médio (boca a boca) |
+| Complexidade técnica (rede, moderação) | Média-Alta | Baixa | Alta | Baixa | Baixa | Média (timing de áudio) | Baixa-Média (salas) |
+| Risco regulatório | Baixo | Baixo | Médio (moderação de UGC) | Baixo | Baixo | Médio (evitar gacha do gênero) | Baixo |
+| Público prioritário | Misto, mais masculino | Misto | Misto | Mais feminino/casual | Misto, sessões passivas | Fãs de música/fandom | Grupos de amigos |
+| **Recomendação** | **Validar primeiro (MVP mais barato: modo 1 mapa, bots)** | Alternativa de baixo risco/baixo custo | Ambição de longo prazo, não para MVP | **Forte 2ª aposta** — maior tendência de mercado e público complementar a A | 3ª aposta de baixo custo/risco | Só viável sem gacha; maior risco de execução | Excelente teste de baixíssimo custo, mas depende de efeito de rede social |
 
 ---
 
@@ -180,7 +205,7 @@ Um jogo-base simples (ex.: corrida, decoração de espaço, customização de av
 
 ## 12. Roteiro recomendado
 
-1. **Semana(s) de prototipagem de conceito** — escolher 1 conceito (recomendado: A) e construir um protótipo jogável mínimo (1 mapa, sem monetização, sem backend completo) para testar se a mecânica é "divertida em 30 segundos".
+1. **Semana(s) de prototipagem de conceito** — escolher 1 conceito (recomendado: A, com D como forte candidato complementar/alternativo) e construir um protótipo jogável mínimo (1 mapa, sem monetização, sem backend completo) para testar se a mecânica é "divertida em 30 segundos". *(Atualização: o protótipo do Conceito A já foi construído e validado tecnicamente em `prototype/party-royale/` — ver README daquela pasta.)*
 2. **Teste com público real** (grupo pequeno de adolescentes reais ou comunidade beta) — medir retenção de sessão e reação emocional, não apenas "funciona tecnicamente".
 3. **MVP com anúncio recompensado básico + 1 loop de progressão cosmética.**
 4. **Teste de mercado pago de baixo orçamento** (seção 9, fase de "vendabilidade") em 1–2 países de CPI baixo (ex.: Brasil) para validar CPI, D1/D7 de retenção antes de qualquer decisão de escala.
@@ -193,10 +218,14 @@ Um jogo-base simples (ex.: corrida, decoração de espaço, customização de av
 
 Existe uma oportunidade real e bem documentada para um jogo mobile popular entre jovens, mas o caminho de menor risco não é competir diretamente com estratégia/RPG (onde a receita é maior, porém a barreira de entrada, custo e tempo de produção também são muito maiores), e sim um **conceito hybridcasual social, leve, com monetização não-abusiva**, testado com orçamento pequeno primeiro no Brasil/LatAm antes de qualquer escala internacional.
 
-Este documento define uma base de decisão; os próximos passos técnicos (prototipagem do Conceito A, definição de arquitetura de backend/matchmaking, estrutura de projeto no motor escolhido) podem ser iniciados como uma segunda etapa deste repositório.
+Este documento define uma base de decisão; os próximos passos técnicos (prototipagem dos demais conceitos, definição de arquitetura de backend/matchmaking, estrutura de projeto no motor escolhido) podem ser iniciados como etapas seguintes deste repositório. Com sete conceitos mapeados (A–G) cobrindo ação social, puzzle, UGC, simulação "cozy", idle, ritmo musical e festa/trivia, há hoje opções suficientes para escolher com base em apetite de risco, orçamento e afinidade da equipe, em vez de depender de uma única aposta.
 
 ### Fontes consultadas
-- Sensor Tower / AppMagic — rankings globais de jogos mobile, julho de 2026
+- Sensor Tower / AppMagic — rankings globais de jogos mobile, julho de 2026 e H1 2026
+- Meaning Planet, Bottega del Sarto, gamedevreports (Sensor Tower/AppMagic H1 2026) — tendências de simulação "cozy" e life sim 2026
+- Deduenas (Hybrid Insights), Apptrove, Adapty — tendências e benchmarks de jogos idle/incremental 2026
+- Marlvel.ai, MMO.Net, Pocket Tactics — panorama de jogos de ritmo musical e monetização gacha 2026
+- Zarta!, BLFFD, Trivio.net, Triviarena — panorama de jogos de festa/trivia social multiplayer 2026
 - Singular, ASOMobile, Axis Intelligence, PocketGamer.biz — análises de gênero e receita 2025–2026
 - Games Data, Pesquisa Game Brasil 2025, Free Fire Mania — panorama do mercado brasileiro
 - GameGrowthAdvisor, Promise Legal, GGWP, Apple Developer Guidelines — regulação COPPA/Lei Felca/App Store 2026
