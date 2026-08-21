@@ -4,9 +4,18 @@
   user-select: none;
 }
 
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --phone-bottom: max(20px, calc(var(--safe-bottom) + 16px));
+}
+
 html, body {
   margin: 0;
+  width: 100%;
   height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
   background: #0c0a1a;
   overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -17,7 +26,9 @@ html, body {
 #app {
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
 }
 
 .view {
@@ -25,8 +36,10 @@ html, body {
   inset: 0;
   display: flex;
   flex-direction: column;
-  padding: max(16px, env(safe-area-inset-top)) 18px 16px;
+  padding: max(16px, var(--safe-top)) 18px var(--phone-bottom);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
 }
 
 .view.hidden {
@@ -204,7 +217,8 @@ html, body {
 #tap-row {
   display: flex;
   gap: 8px;
-  padding-bottom: max(8px, env(safe-area-inset-bottom));
+  padding-bottom: 4px;
+  flex-shrink: 0;
 }
 
 .tap-btn {

@@ -51,7 +51,8 @@ const GRACE_PERIOD = 4;
 // estreitos, que são o hardware predominante do público-alvo).
 let ARENA_MAX = 260;
 function computeArenaMax() {
-  const minSide = Math.min(window.innerWidth, window.innerHeight);
+  const { w, h } = viewSize();
+  const minSide = Math.min(w, h);
   return clamp(minSide * 0.46, 150, 420);
 }
 
@@ -136,16 +137,27 @@ let shakeTime = 0;
 let shakeMag = 0;
 let currentLayoutName = "";
 
+function viewSize() {
+  const vv = window.visualViewport;
+  if (vv && vv.height > 0) return { w: vv.width, h: vv.height };
+  return { w: window.innerWidth, h: window.innerHeight };
+}
+
 function resize() {
-  canvas.width = window.innerWidth * devicePixelRatio;
-  canvas.height = window.innerHeight * devicePixelRatio;
-  canvas.style.width = `${window.innerWidth}px`;
-  canvas.style.height = `${window.innerHeight}px`;
-  arena.x = window.innerWidth / 2;
-  arena.y = window.innerHeight / 2;
+  const { w, h } = viewSize();
+  canvas.width = w * devicePixelRatio;
+  canvas.height = h * devicePixelRatio;
+  canvas.style.width = `${w}px`;
+  canvas.style.height = `${h}px`;
+  arena.x = w / 2;
+  arena.y = h / 2;
   ARENA_MAX = computeArenaMax();
 }
 window.addEventListener("resize", resize);
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", resize);
+  window.visualViewport.addEventListener("scroll", resize);
+}
 resize();
 
 function showToast(text) {
@@ -444,8 +456,9 @@ function drawArena() {
     shakeMag = 0;
   }
 
+  const { w, h } = viewSize();
   ctx.fillStyle = "#0d0f1a";
-  ctx.fillRect(-20, -20, window.innerWidth + 40, window.innerHeight + 40);
+  ctx.fillRect(-20, -20, w + 40, h + 40);
 
   ctx.save();
   ctx.beginPath();

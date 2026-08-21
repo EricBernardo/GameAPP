@@ -130,6 +130,7 @@ function resize() {
   canvas.style.height = `${boardPx}px`;
 }
 window.addEventListener("resize", resize);
+if (window.visualViewport) window.visualViewport.addEventListener("resize", resize);
 resize();
 
 function burst(cx, cy, color) {

@@ -200,6 +200,7 @@ function resizeCanvas() {
   canvas.style.height = `${canvasH}px`;
 }
 window.addEventListener("resize", resizeCanvas);
+if (window.visualViewport) window.visualViewport.addEventListener("resize", resizeCanvas);
 
 function buildTapRow() {
   const row = document.getElementById("tap-row");

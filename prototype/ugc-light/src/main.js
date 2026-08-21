@@ -184,6 +184,15 @@ window.addEventListener("resize", () => {
   }
   if (!views.play.classList.contains("hidden")) resizePlayCanvas();
 });
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", () => {
+    if (!views.editor.classList.contains("hidden")) {
+      resizeEditorCanvas();
+      drawEditor();
+    }
+    if (!views.play.classList.contains("hidden")) resizePlayCanvas();
+  });
+}
 
 function drawTile(ctx, type, x, y, size) {
   const pad = size * 0.06;

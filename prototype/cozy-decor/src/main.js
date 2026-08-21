@@ -64,6 +64,7 @@ function resizeCanvas() {
   drawRoom();
 }
 window.addEventListener("resize", resizeCanvas);
+if (window.visualViewport) window.visualViewport.addEventListener("resize", resizeCanvas);
 
 function toast(text) {
   const el = document.getElementById("toast");
