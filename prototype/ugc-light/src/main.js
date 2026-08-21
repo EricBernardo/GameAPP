@@ -419,6 +419,7 @@ document.getElementById("btn-editor-test").addEventListener("click", () => {
     return;
   }
   openPlay({ name: editingLevelName || "Teste", grid: editorGrid, __fromEditor: true });
+  toast("Depois de testar, toque em Salvar para guardar na lista.");
 });
 
 // ---------- Jogo (play) ----------
@@ -511,9 +512,7 @@ function openPlay(level) {
 }
 
 document.getElementById("btn-play-back").addEventListener("click", () => {
-  playRunning = false;
-  showView("list");
-  renderLevelList();
+  goBackFromPlay();
 });
 
 function setupTouchControls() {
@@ -604,9 +603,41 @@ function drawPlay() {
   ctx.restore();
 }
 
+function allPlayableLevels() {
+  return [...BUILTIN_LEVELS, ...loadUserLevels()];
+}
+
+function goBackFromPlay() {
+  playRunning = false;
+  if (currentPlayLevel?.__fromEditor) {
+    showView("editor");
+    toast("Salve a fase para ela aparecer na lista.");
+    requestAnimationFrame(() => {
+      resizeEditorCanvas();
+      drawEditor();
+    });
+    return;
+  }
+  showView("list");
+  renderLevelList();
+}
+
 function completeLevel() {
   playRunning = false;
   document.getElementById("win-stats").textContent = `${coinsCollected} moedas coletadas · ${deaths} quedas`;
+  const nextBtn = document.getElementById("btn-win-next");
+  const backBtn = document.getElementById("btn-win-back");
+  if (currentPlayLevel?.__fromEditor) {
+    nextBtn.classList.add("hidden");
+    backBtn.textContent = "VOLTAR AO EDITOR";
+  } else {
+    backBtn.textContent = "VOLTAR À LISTA";
+    const all = allPlayableLevels();
+    const idx = all.findIndex((l) => l.id === currentPlayLevel?.id);
+    const next = idx >= 0 ? all[idx + 1] : null;
+    nextBtn.classList.toggle("hidden", !next);
+    nextBtn.onclick = next ? () => openPlay(next) : null;
+  }
   showView("win");
 }
 
@@ -614,8 +645,7 @@ document.getElementById("btn-win-retry").addEventListener("click", () => {
   openPlay(currentPlayLevel);
 });
 document.getElementById("btn-win-back").addEventListener("click", () => {
-  showView("list");
-  renderLevelList();
+  goBackFromPlay();
 });
 
 let lastTime = performance.now();

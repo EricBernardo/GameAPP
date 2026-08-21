@@ -9,9 +9,9 @@ const PASSIVE_INCOME_AMOUNT = 1;
 
 const BACKDROPS = [
   { id: "classico", name: "Clássico", icon: "🏠", floor: "#e8d3b8", wall: "#f7e9d7", unlockLevel: 1 },
-  { id: "tropical", name: "Tropical", icon: "🌴", floor: "#cdeac0", wall: "#eaf7dc", unlockLevel: 1 },
-  { id: "praia", name: "Praia", icon: "🏖️", floor: "#f4e2b8", wall: "#cfeffa", unlockLevel: 2 },
-  { id: "espaco", name: "Espaço", icon: "🌌", floor: "#2b2d42", wall: "#1a1b2e", unlockLevel: 3, dark: true },
+  { id: "tropical", name: "Tropical", icon: "🌴", floor: "#cdeac0", wall: "#eaf7dc", unlockLevel: 1, tag: "tropical" },
+  { id: "praia", name: "Praia", icon: "🏖️", floor: "#f4e2b8", wall: "#cfeffa", unlockLevel: 2, tag: "praia" },
+  { id: "espaco", name: "Espaço", icon: "🌌", floor: "#2b2d42", wall: "#1a1b2e", unlockLevel: 3, dark: true, tag: "espaco" },
   { id: "noturno", name: "Noturno", icon: "🌙", floor: "#3a3548", wall: "#221f30", unlockLevel: 4, dark: true },
 ];
 
@@ -261,26 +261,39 @@ document.getElementById("btn-cancel-placing").addEventListener("click", () => {
 
 // ---------- Cliente / pedidos ----------
 
+function requestsForLevel() {
+  const level = currentLevel();
+  return REQUEST_TAGS.filter((r) => {
+    const itemCount = ITEMS.filter((i) => i.tags.includes(r.tag) && i.unlockLevel <= level).length;
+    const wall = BACKDROPS.some((b) => b.tag === r.tag && b.unlockLevel <= level);
+    return itemCount >= 2 || wall;
+  });
+}
+
 function spawnCustomer() {
+  const pool = requestsForLevel();
   let pick;
   do {
-    pick = REQUEST_TAGS[Math.floor(Math.random() * REQUEST_TAGS.length)];
-  } while (REQUEST_TAGS.length > 1 && pick.tag === state.lastCustomerTag);
+    pick = pool[Math.floor(Math.random() * pool.length)];
+  } while (pool.length > 1 && pick.tag === state.lastCustomerTag);
   state.lastCustomerTag = pick.tag;
   const name = CUSTOMER_NAMES[Math.floor(Math.random() * CUSTOMER_NAMES.length)];
   currentCustomer = { name, tag: pick.tag, text: pick.text };
   document.getElementById("customer-name").textContent = name;
-  document.getElementById("customer-text").textContent = pick.text;
+  document.getElementById("customer-text").textContent = `${pick.text} (2 itens do tema ou a parede combinando)`;
   saveState();
 }
 
-function roomHasTag(tag) {
-  return state.roomGrid.some((itemId) => itemId && ITEM_BY_ID[itemId]?.tags.includes(tag));
+function roomMeetsRequest(tag) {
+  const count = state.roomGrid.filter((id) => id && ITEM_BY_ID[id]?.tags.includes(tag)).length;
+  if (count >= 2) return true;
+  return currentBackdrop().tag === tag;
 }
 
+let delivering = false;
 document.getElementById("btn-deliver").addEventListener("click", () => {
-  if (!currentCustomer) return;
-  if (roomHasTag(currentCustomer.tag)) {
+  if (!currentCustomer || delivering) return;
+  if (roomMeetsRequest(currentCustomer.tag)) {
     const level = currentLevel();
     const coinsEarned = 20 + level * 5;
     const xpEarned = 15;
@@ -296,9 +309,16 @@ document.getElementById("btn-deliver").addEventListener("click", () => {
     if (newLevel > prevLevel) {
       setTimeout(() => toast(`Subiu para o nível ${newLevel}! Novos itens desbloqueados.`), 1200);
     }
+    delivering = true;
+    const btn = document.getElementById("btn-deliver");
+    btn.disabled = true;
     spawnCustomer();
+    setTimeout(() => {
+      delivering = false;
+      btn.disabled = false;
+    }, 900);
   } else {
-    toast("Ainda não atende ao pedido... adicione algo que combine!");
+    toast("Monte uma cena: 2 itens do tema ou a parede combinando.");
   }
 });
 

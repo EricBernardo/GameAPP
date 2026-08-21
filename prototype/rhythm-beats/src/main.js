@@ -120,40 +120,51 @@ function renderShop() {
   for (const theme of THEMES) {
     const owned = state.ownedThemes.includes(theme.id);
     const active = state.activeTheme === theme.id;
-    const card = document.createElement("div");
+    const card = document.createElement("button");
+    card.type = "button";
     card.className = "theme-card";
+    card.dataset.themeId = theme.id;
     card.innerHTML = `
       <div class="theme-swatches">${theme.colors.map((c) => `<span style="background:${c}"></span>`).join("")}</div>
       <div class="theme-info">
         <div class="theme-name">${theme.name}</div>
       </div>
     `;
-    const btn = document.createElement("button");
+    const badge = document.createElement("span");
+    badge.className = "theme-badge";
     if (active) {
-      btn.textContent = "Em uso";
-      btn.className = "active-theme";
-      btn.disabled = true;
+      badge.textContent = "Em uso";
+      badge.classList.add("active-theme");
     } else if (owned) {
-      btn.textContent = "Usar";
-      btn.addEventListener("click", () => {
-        state.activeTheme = theme.id;
-        saveState();
-        renderShop();
-      });
+      badge.textContent = "Usar";
     } else {
-      btn.textContent = theme.price === 0 ? "Grátis" : `🎵 ${theme.price}`;
-      btn.disabled = state.coins < theme.price;
-      btn.addEventListener("click", () => {
-        if (state.coins < theme.price) return;
-        state.coins -= theme.price;
-        state.ownedThemes.push(theme.id);
+      badge.textContent = theme.price === 0 ? "Grátis" : `🎵 ${theme.price}`;
+      if (state.coins < theme.price) badge.classList.add("cant-afford");
+    }
+    card.appendChild(badge);
+    card.addEventListener("click", () => {
+      if (active) {
+        toast("Este tema já está em uso.");
+        return;
+      }
+      if (owned) {
         state.activeTheme = theme.id;
         saveState();
-        toast(`Tema "${theme.name}" desbloqueado!`);
+        toast(`Tema "${theme.name}" em uso.`);
         renderShop();
-      });
-    }
-    card.appendChild(btn);
+        return;
+      }
+      if (state.coins < theme.price) {
+        toast(`Faltam ${theme.price - state.coins} 🎵 para "${theme.name}".`);
+        return;
+      }
+      state.coins -= theme.price;
+      if (!state.ownedThemes.includes(theme.id)) state.ownedThemes.push(theme.id);
+      state.activeTheme = theme.id;
+      saveState();
+      toast(`Tema "${theme.name}" desbloqueado!`);
+      renderShop();
+    });
     list.appendChild(card);
   }
 }

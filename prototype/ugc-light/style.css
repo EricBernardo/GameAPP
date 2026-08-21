@@ -275,8 +275,15 @@ html, body {
 
 .win-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 10px;
   margin-top: 8px;
+  justify-content: center;
+}
+
+.win-actions .hidden,
+button.hidden {
+  display: none !important;
 }
 
 .modal {

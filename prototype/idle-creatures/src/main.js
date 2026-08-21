@@ -10,7 +10,7 @@ const MIN_OFFLINE_SECONDS_TO_SHOW = 10;
 
 function defaultState() {
   return {
-    gems: 15,
+    gems: 40,
     levels: new Array(CREATURES.length).fill(0),
     lastSeen: Date.now(),
     boostUntil: 0,
@@ -30,11 +30,18 @@ function loadState() {
 }
 
 const state = loadState();
+if (state.levels.every((l) => l === 0) && state.gems < 40) {
+  state.gems = 40;
+}
 let pendingOfflineAmount = 0;
 
 function saveState() {
-  state.lastSeen = Date.now();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function stampSeen() {
+  state.lastSeen = Date.now();
+  saveState();
 }
 
 function formatNumber(n) {
@@ -77,6 +84,8 @@ function toast(text) {
 // ---------- Ganhos offline (determinísticos, sem sorteio) ----------
 
 function checkOfflineEarnings() {
+  const modal = document.getElementById("offline-modal");
+  if (!modal.classList.contains("hidden")) return;
   const elapsedSeconds = Math.max(0, (Date.now() - state.lastSeen) / 1000);
   if (elapsedSeconds < MIN_OFFLINE_SECONDS_TO_SHOW) return;
   const cappedSeconds = Math.min(elapsedSeconds, OFFLINE_CAP_SECONDS);
@@ -84,14 +93,14 @@ function checkOfflineEarnings() {
   if (amount <= 0) return;
   pendingOfflineAmount = amount;
   document.getElementById("offline-amount").textContent = `+${formatNumber(amount)} 💎`;
-  document.getElementById("offline-modal").classList.remove("hidden");
+  modal.classList.remove("hidden");
 }
 
 document.getElementById("btn-offline-collect").addEventListener("click", () => {
   state.gems += pendingOfflineAmount;
   pendingOfflineAmount = 0;
   document.getElementById("offline-modal").classList.add("hidden");
-  saveState();
+  stampSeen();
   renderAll();
 });
 
@@ -202,25 +211,29 @@ function renderCreatureList() {
     if (unlocked) {
       const cost = upgradeCost(creature, level);
       btn.textContent = `⬆ ${formatNumber(cost)} 💎`;
-      btn.disabled = state.gems < cost;
       btn.addEventListener("click", () => {
-        if (state.gems < cost) return;
+        if (state.gems < cost) {
+          toast(`Faltam ${formatNumber(cost - state.gems)} 💎 para melhorar`);
+          return;
+        }
         state.gems -= cost;
         state.levels[i] += 1;
         sfx.creature(i);
-        saveState();
+        stampSeen();
         renderAll();
       });
     } else if (canUnlockNow) {
       btn.textContent = `Adotar`;
-      btn.disabled = state.gems < creature.unlockCost;
       btn.addEventListener("click", () => {
-        if (state.gems < creature.unlockCost) return;
+        if (state.gems < creature.unlockCost) {
+          toast(`Faltam ${formatNumber(creature.unlockCost - state.gems)} 💎`);
+          return;
+        }
         state.gems -= creature.unlockCost;
         state.levels[i] = 1;
         sfx.unlock();
         toast(`${creature.name} adotado(a)!`);
-        saveState();
+        stampSeen();
         renderAll();
       });
     } else {
@@ -251,6 +264,11 @@ function renderHabitat() {
 
   const wrap = document.getElementById("habitat");
   wrap.innerHTML = "";
+  wrap.classList.toggle("empty", unlockedCount === 0);
+  if (unlockedCount === 0) {
+    wrap.innerHTML = `<span class="habitat-hint">Adote uma criatura para o jardim ganhar vida</span>`;
+    return;
+  }
   for (let i = 0; i < CREATURES.length; i++) {
     if (state.levels[i] <= 0) continue;
     const span = document.createElement("button");
@@ -293,10 +311,22 @@ function loop(now) {
   requestAnimationFrame(loop);
 }
 
-setInterval(saveState, 5000);
-window.addEventListener("beforeunload", saveState);
+setInterval(() => {
+  if (document.hidden) saveState();
+  else stampSeen();
+}, 5000);
+window.addEventListener("beforeunload", () => stampSeen());
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    stampSeen();
+  } else {
+    checkOfflineEarnings();
+    stampSeen();
+  }
+});
 
 checkOfflineEarnings();
+stampSeen();
 renderAll();
 requestAnimationFrame((t) => {
   lastTime = t;

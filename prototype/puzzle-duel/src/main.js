@@ -27,7 +27,7 @@ const endSubtitle = document.getElementById("end-subtitle");
 const endScore = document.getElementById("end-score");
 
 const RIVAL_NAMES = ["Nino", "Zaza", "Kiko", "Miu", "Tuko", "Vex", "Loro", "Bibi"];
-document.getElementById("race-rival-label").textContent = `${RIVAL_NAMES[Math.floor(Math.random() * RIVAL_NAMES.length)]} (rival)`;
+document.getElementById("race-rival-name").textContent = `${RIVAL_NAMES[Math.floor(Math.random() * RIVAL_NAMES.length)]}`;
 
 const toastEl = document.getElementById("toast");
 function showToast(text) {
@@ -174,12 +174,16 @@ function startMatch() {
   phase = "idle";
   selected = null;
   particles.length = 0;
-  rivalTarget = 900 + Math.random() * 500;
+  rivalTarget = 8500 + Math.random() * 3500;
   rivalScore = 0;
   hudScore.textContent = "0";
   hudCombo.classList.remove("show");
   raceYou.style.left = "0%";
   raceRival.style.left = "0%";
+  const rivalName = RIVAL_NAMES[Math.floor(Math.random() * RIVAL_NAMES.length)];
+  const nameEl = document.getElementById("race-rival-name");
+  if (nameEl) nameEl.textContent = rivalName;
+  updateRaceBar();
 }
 
 function attemptSwap(a, b) {
@@ -265,9 +269,13 @@ function updateRival() {
 }
 
 function updateRaceBar() {
-  const finish = Math.max(rivalTarget * 1.15, score, 1);
+  const finish = Math.max(rivalTarget, score, 1);
   raceYou.style.left = `${Math.min(100, (score / finish) * 100)}%`;
   raceRival.style.left = `${Math.min(100, (rivalScore / finish) * 100)}%`;
+  const youEl = document.getElementById("race-you-score");
+  const rivalEl = document.getElementById("race-rival-score");
+  if (youEl) youEl.textContent = String(Math.round(score));
+  if (rivalEl) rivalEl.textContent = `${Math.round(rivalScore)}/${Math.round(rivalTarget)}`;
 }
 
 function endMatch() {
@@ -278,7 +286,16 @@ function endMatch() {
   saveCoins("pd_coins", totalCoins);
   refreshCoinDisplays();
 
-  if (won) sfx.win();
+  if (won) {
+    if (!loadJson("pd_win_gift", false)) {
+      boosterCounts.reshuffle += 1;
+      saveJson("pd_boosters", boosterCounts);
+      saveJson("pd_win_gift", true);
+      refreshBoosterButtons();
+      showToast("Booster 🔀 Embaralhar de presente — use na próxima!");
+    }
+    sfx.win();
+  }
   else sfx.lose();
   endTitle.textContent = won ? "VITÓRIA!" : "QUASE LÁ!";
   endSubtitle.textContent = won

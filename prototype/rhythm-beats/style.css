@@ -281,9 +281,19 @@ html, body {
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 100%;
+  text-align: left;
   background: rgba(255, 255, 255, 0.06);
+  border: none;
   border-radius: 16px;
   padding: 12px 14px;
+  color: inherit;
+  cursor: pointer;
+  min-height: 56px;
+}
+
+.theme-card:active {
+  transform: scale(0.98);
 }
 
 .theme-swatches {
@@ -307,7 +317,7 @@ html, body {
   font-size: 14px;
 }
 
-.theme-card button {
+.theme-badge {
   border: none;
   border-radius: 12px;
   padding: 8px 14px;
@@ -317,12 +327,12 @@ html, body {
   color: #04241c;
 }
 
-.theme-card button.active-theme {
+.theme-badge.active-theme {
   background: rgba(255, 255, 255, 0.15);
   color: #fff;
 }
 
-.theme-card button:disabled {
+.theme-badge.cant-afford {
   background: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.5);
 }

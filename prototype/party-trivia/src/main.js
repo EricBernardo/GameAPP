@@ -1,6 +1,6 @@
 import { shuffledQuestions } from "./questions.js";
 
-const TOTAL_ROUNDS = 5;
+const TOTAL_ROUNDS = 3;
 const CORRECT_GUESS_POINTS = 1000;
 const FOOL_BONUS_POINTS = 500;
 
