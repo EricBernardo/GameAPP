@@ -1,7 +1,8 @@
 import {
   ROWS, COLS, GEM_COLORS,
-  createInitialBoard, findMatches, areAdjacent, swapTiles, clearAndRefill,
+  createInitialBoard, findMatches, areAdjacent, swapTiles, clearAndRefill, applyRandomIce,
 } from "./grid.js";
+import { unlockAudio, sfx } from "./audio.js";
 
 const ROUND_TIME = 90;
 const POINTS_PER_GEM = 30;
@@ -27,6 +28,14 @@ const endScore = document.getElementById("end-score");
 
 const RIVAL_NAMES = ["Nino", "Zaza", "Kiko", "Miu", "Tuko", "Vex", "Loro", "Bibi"];
 document.getElementById("race-rival-label").textContent = `${RIVAL_NAMES[Math.floor(Math.random() * RIVAL_NAMES.length)]} (rival)`;
+
+const toastEl = document.getElementById("toast");
+function showToast(text) {
+  toastEl.textContent = text;
+  toastEl.classList.add("show");
+  clearTimeout(toastEl._t);
+  toastEl._t = setTimeout(() => toastEl.classList.remove("show"), 1400);
+}
 
 let tiles = [];
 let cellSize = 40;
@@ -154,8 +163,11 @@ function showCombo(level) {
   hudCombo._t = setTimeout(() => hudCombo.classList.remove("show"), 900);
 }
 
+const ICE_TILE_COUNT = 6;
+
 function startMatch() {
   tiles = createInitialBoard();
+  applyRandomIce(tiles, ICE_TILE_COUNT);
   timeLeft = ROUND_TIME;
   score = 0;
   comboLevel = 0;
@@ -176,6 +188,7 @@ function attemptSwap(a, b) {
     return;
   }
   swapTiles(tiles, a, b);
+  sfx.swap();
   pendingSwapCells = { a, b };
   phase = "resolving";
   resolveTimer = SWAP_ANIM_TIME;
@@ -190,6 +203,7 @@ function processStep() {
       resolveWave(matched);
     } else {
       swapTiles(tiles, pendingSwapCells.a, pendingSwapCells.b);
+      sfx.noMatch();
       resolveTimer = SWAP_ANIM_TIME;
       nextStep = "backToIdle";
     }
@@ -210,18 +224,31 @@ function processStep() {
 function resolveWave(matched) {
   comboLevel += 1;
   let cleared = 0;
+  let cracked = 0;
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      if (matched[r][c] && tiles[r][c]) {
-        const { x, y } = cellCenter(r, c);
-        burst(x, y, GEM_COLORS[tiles[r][c].type]);
+      if (!matched[r][c] || !tiles[r][c]) continue;
+      const tile = tiles[r][c];
+      const { x, y } = cellCenter(r, c);
+      if (tile.iceLevel > 0) {
+        // Gelo absorve esta combinação: a peça sobrevive, só perde a
+        // camada congelada — precisa de outra combinação para limpar.
+        tile.iceLevel = 0;
+        matched[r][c] = false;
+        burst(x, y, "#bde0fe");
+        cracked++;
+      } else {
+        burst(x, y, GEM_COLORS[tile.type]);
         cleared++;
       }
     }
   }
+  if (cracked > 0) showToast(cracked > 1 ? `${cracked} blocos de gelo quebrados!` : "Bloco de gelo quebrado!");
   score += cleared * POINTS_PER_GEM * comboLevel;
   hudScore.textContent = String(score);
   showCombo(comboLevel);
+  if (comboLevel >= 2) sfx.combo(comboLevel);
+  else sfx.match(comboLevel);
 
   clearAndRefill(tiles, matched);
   resolveTimer = CLEAR_PAUSE + FALL_ANIM_TIME;
@@ -251,6 +278,8 @@ function endMatch() {
   saveCoins("pd_coins", totalCoins);
   refreshCoinDisplays();
 
+  if (won) sfx.win();
+  else sfx.lose();
   endTitle.textContent = won ? "VITÓRIA!" : "QUASE LÁ!";
   endSubtitle.textContent = won
     ? "Você superou a pontuação do seu rival."
@@ -379,6 +408,25 @@ function drawGem(tile, isSelected) {
       ctx.fill();
   }
 
+  if (tile.iceLevel > 0) {
+    ctx.save();
+    ctx.translate(x + pad, y + pad);
+    roundRect(0, 0, size, size, size * 0.28);
+    ctx.fillStyle = "rgba(189, 224, 254, 0.8)";
+    ctx.fill();
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(size * 0.2, size * 0.15);
+    ctx.lineTo(size * 0.55, size * 0.5);
+    ctx.lineTo(size * 0.3, size * 0.85);
+    ctx.moveTo(size * 0.55, size * 0.5);
+    ctx.lineTo(size * 0.85, size * 0.3);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   ctx.restore();
 }
 
@@ -453,6 +501,7 @@ function loop(now) {
 }
 
 document.getElementById("btn-play").addEventListener("click", () => {
+  unlockAudio();
   startMatch();
   screenStart.classList.add("hidden");
   running = true;
@@ -470,6 +519,7 @@ function useBooster(id) {
   if (!running || phase !== "idle") return;
   if (boosterCounts[id] <= 0) return;
 
+  sfx.booster();
   if (id === "reshuffle") {
     tiles = createInitialBoard();
     selected = null;

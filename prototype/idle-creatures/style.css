@@ -106,6 +106,31 @@ html, body {
   opacity: 0.85;
 }
 
+#habitat {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  min-height: 40px;
+  padding: 4px 8px;
+}
+
+.habitat-creature {
+  border: none;
+  background: none;
+  padding: 6px;
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 26px;
+  animation: habitat-bob 2.2s ease-in-out infinite;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.35));
+}
+
+@keyframes habitat-bob {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-8px) rotate(4deg); }
+}
+
 #creature-list {
   flex: 1;
   overflow-y: auto;

@@ -2,13 +2,14 @@ export const LANE_COUNT = 4;
 export const LANE_FREQS = [261.63, 329.63, 392.0, 523.25];
 export const LANE_KEYS = ["D", "F", "J", "K"];
 
-// Padrões de fase (sequência de faixa por batida) escritos à mão e fixos —
-// o "chart" nunca muda entre execuções, como em jogos de ritmo reais,
-// sem qualquer elemento aleatório/gacha.
-function repeat(pattern, times) {
-  const out = [];
-  for (let i = 0; i < times; i++) out.push(...pattern);
-  return out;
+// Padrões de fase escritos à mão e fixos — o "chart" nunca muda entre
+// execuções, como em jogos de ritmo reais, sem qualquer elemento
+// aleatório/gacha. Cada música agora é composta por seções distintas
+// (introdução mais lenta, clímax mais denso com notas de meia batida,
+// final de desaceleração) em vez de um único padrão repetido, para que
+// a música pareça ter estrutura, não um loop de treino.
+function section(startBeat, pattern, step = 1) {
+  return pattern.map((lane, i) => ({ lane, beat: startBeat + i * step }));
 }
 
 export const SONGS = [
@@ -16,19 +17,33 @@ export const SONGS = [
     id: "facil",
     name: "Ritmo Fácil",
     bpm: 96,
-    lanes: repeat([0, 1, 2, 3, 3, 2, 1, 0], 4),
+    notes: [
+      ...section(0, [0, 1, 2, 3, 3, 2, 1, 0], 1),
+      ...section(8, [0, 2, 1, 3, 0, 2, 1, 3, 0, 2, 1, 3, 0, 2, 1, 3], 0.5),
+      ...section(16, [3, 2, 1, 0, 0, 1, 2, 3], 1),
+    ],
   },
   {
     id: "media",
     name: "Batida Média",
     bpm: 120,
-    lanes: repeat([0, 2, 1, 3, 0, 3, 1, 2, 2, 0, 3, 1], 3),
+    notes: [
+      ...section(0, [0, 2, 1, 3, 0, 3, 1, 2], 1),
+      ...section(8, [0, 1, 2, 3, 1, 2, 3, 0, 2, 3, 0, 1, 3, 0, 1, 2], 0.5),
+      ...section(16, [2, 0, 3, 1, 2, 0, 3, 1], 1),
+    ],
   },
   {
     id: "turbo",
     name: "Turbo Beat",
     bpm: 140,
-    lanes: repeat([0, 1, 0, 2, 1, 3, 2, 0, 3, 1, 2, 3, 0, 2, 1, 3], 3),
+    notes: [
+      ...section(0, [0, 1, 2, 3, 0, 1, 2, 3], 1),
+      ...section(8, [0, 2, 1, 3, 2, 0, 3, 1, 0, 2, 1, 3, 2, 0, 3, 1], 0.5),
+      ...section(16, [1, 3, 0, 2], 1),
+      ...section(20, [3, 1, 2, 0, 1, 3, 0, 2, 3, 1, 2, 0, 1, 3, 0, 2], 0.5),
+      ...section(28, [0, 1, 2, 3, 3, 2, 1, 0], 1),
+    ],
   },
 ];
 
@@ -47,10 +62,19 @@ export const MISS_WINDOW = 0.2;
 
 export function buildChart(song) {
   const beatDuration = 60 / song.bpm;
-  return song.lanes.map((lane, i) => ({
-    lane,
-    hitTime: LEAD_IN_SECONDS + i * beatDuration,
-    judged: false,
-    result: null,
-  }));
+  return song.notes
+    .map((n) => ({
+      lane: n.lane,
+      hitTime: LEAD_IN_SECONDS + n.beat * beatDuration,
+      judged: false,
+      result: null,
+    }))
+    .sort((a, b) => a.hitTime - b.hitTime);
 }
+
+// Configuração da barra de risco (Fase 3 da auditoria): cada "faltou"
+// reduz energia; acertos recuperam um pouco. Zerar a energia termina a
+// música antes da hora — o risco real que faltava no protótipo original.
+export const ENERGY_MAX = 100;
+export const ENERGY_LOSS_PER_MISS = 22;
+export const ENERGY_GAIN_PER_HIT = 3;

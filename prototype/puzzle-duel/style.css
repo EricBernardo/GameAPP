@@ -311,3 +311,26 @@ html, body {
   background: rgba(255, 255, 255, 0.12);
   color: rgba(255, 255, 255, 0.5);
 }
+
+#toast {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.55);
+  padding: 6px 16px;
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  white-space: nowrap;
+}
+
+#toast.show {
+  opacity: 1;
+}

@@ -61,7 +61,7 @@ export class Character {
     return list;
   }
 
-  update(dt, grid, input, events) {
+  update(dt, grid, input, events, platforms = []) {
     if (this.invulnerable > 0) this.invulnerable -= dt;
 
     this.vx = input.moveX * MOVE_SPEED;
@@ -111,6 +111,20 @@ export class Character {
         this.vy = 0;
       }
       b = this.bounds;
+    }
+
+    // Plataformas móveis: entidades dinâmicas fora da grade estática,
+    // que "carregam" o personagem junto quando ele pousa em cima.
+    for (const platform of platforms) {
+      b = this.bounds;
+      const overlapX = b.right > platform.x && b.left < platform.x + platform.width;
+      const nearTop = b.bottom >= platform.y && b.bottom <= platform.y + 16;
+      if (overlapX && this.vy >= 0 && nearTop && b.top < platform.y + platform.height) {
+        this.y = platform.y - this.height;
+        this.vy = 0;
+        this.grounded = true;
+        this.x += (platform.vx || 0) * dt;
+      }
     }
 
     if (this.y > ROWS * this.cellSize + this.height * 2) {

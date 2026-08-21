@@ -3,6 +3,7 @@ import {
   OFFLINE_CAP_SECONDS, OFFLINE_EFFICIENCY,
   BOOST_MULTIPLIER, BOOST_DURATION_SECONDS, BOOST_COOLDOWN_SECONDS,
 } from "./creatures.js";
+import { unlockAudio, sfx } from "./audio.js";
 
 const STORAGE_KEY = "idle_creatures_state";
 const MIN_OFFLINE_SECONDS_TO_SHOW = 10;
@@ -106,8 +107,10 @@ document.getElementById("btn-offline-double").addEventListener("click", () => {
 // ---------- Toque manual ----------
 
 document.getElementById("btn-tap").addEventListener("click", (evt) => {
+  unlockAudio();
   const tapValue = Math.max(1, Math.round(totalProduction() * 0.5));
   state.gems += tapValue;
+  sfx.tapGem();
   spawnFloatNumber(evt.currentTarget, `+${formatNumber(tapValue)}`);
   saveState();
   renderTopbar();
@@ -140,6 +143,8 @@ function spawnFloatNumber(anchor, text) {
 document.getElementById("btn-boost").addEventListener("click", () => {
   const now = Date.now();
   if (now < state.boostCooldownUntil) return;
+  unlockAudio();
+  sfx.boost();
   state.boostUntil = now + BOOST_DURATION_SECONDS * 1000;
   state.boostCooldownUntil = state.boostUntil + BOOST_COOLDOWN_SECONDS * 1000;
   toast("Boost de 2x ativado por 60s!");
@@ -202,6 +207,7 @@ function renderCreatureList() {
         if (state.gems < cost) return;
         state.gems -= cost;
         state.levels[i] += 1;
+        sfx.creature(i);
         saveState();
         renderAll();
       });
@@ -212,6 +218,7 @@ function renderCreatureList() {
         if (state.gems < creature.unlockCost) return;
         state.gems -= creature.unlockCost;
         state.levels[i] = 1;
+        sfx.unlock();
         toast(`${creature.name} adotado(a)!`);
         saveState();
         renderAll();
@@ -230,10 +237,40 @@ function renderTopbar() {
   document.getElementById("rate-value").textContent = formatNumber(effectiveProduction());
 }
 
+// ---------- Habitat visual ----------
+// Antes desta correção, as criaturas adotadas eram só uma linha de
+// texto na lista — nenhum lugar da tela mostrava as criaturas "de
+// verdade". Este habitat dá uma presença visual viva a cada uma.
+
+let habitatRendered = -1;
+
+function renderHabitat() {
+  const unlockedCount = state.levels.filter((l) => l > 0).length;
+  if (unlockedCount === habitatRendered) return;
+  habitatRendered = unlockedCount;
+
+  const wrap = document.getElementById("habitat");
+  wrap.innerHTML = "";
+  for (let i = 0; i < CREATURES.length; i++) {
+    if (state.levels[i] <= 0) continue;
+    const span = document.createElement("button");
+    span.className = "habitat-creature";
+    span.textContent = CREATURES[i].icon;
+    span.title = CREATURES[i].name;
+    span.style.animationDelay = `${(i % 5) * 0.3}s`;
+    span.addEventListener("click", () => {
+      unlockAudio();
+      sfx.creature(i);
+    });
+    wrap.appendChild(span);
+  }
+}
+
 function renderAll() {
   renderTopbar();
   renderCreatureList();
   renderBoostStatus();
+  renderHabitat();
 }
 
 // ---------- Loop principal ----------
