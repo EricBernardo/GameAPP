@@ -43,7 +43,25 @@ const endTitle = document.getElementById("end-title");
 const endSubtitle = document.getElementById("end-subtitle");
 const endCoins = document.getElementById("end-coins");
 
-let totalCoins = Number(localStorage.getItem("pr_coins") || 0);
+function loadCoins(key) {
+  try {
+    const parsed = Number(localStorage.getItem(key));
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveCoins(key, value) {
+  try {
+    localStorage.setItem(key, String(value));
+  } catch {
+    // localStorage indisponível (modo privado, storage bloqueado etc.) —
+    // o jogo continua funcionando, só sem persistir moedas entre sessões.
+  }
+}
+
+let totalCoins = loadCoins("pr_coins");
 hudCoins.textContent = `🪙 ${totalCoins}`;
 
 const input = new InputController();
@@ -297,7 +315,7 @@ function endMatch(won, remaining) {
   running = false;
   const earned = won ? 50 : Math.max(5, 30 - remaining * 2);
   totalCoins += earned;
-  localStorage.setItem("pr_coins", String(totalCoins));
+  saveCoins("pr_coins", totalCoins);
   hudCoins.textContent = `🪙 ${totalCoins}`;
 
   endTitle.textContent = won ? "VITÓRIA!" : "ELIMINADO";
@@ -390,10 +408,14 @@ function drawArena() {
     }
     ctx.restore();
 
-    ctx.fillStyle = "rgba(255,255,255,0.85)";
-    ctx.font = "11px sans-serif";
+    ctx.font = "bold 13px sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(p.name, p.x, p.y - p.radius - 8);
+    const nameWidth = ctx.measureText(p.name).width;
+    const labelY = p.y - p.radius - 14;
+    ctx.fillStyle = "rgba(0,0,0,0.45)";
+    ctx.fillRect(p.x - nameWidth / 2 - 5, labelY - 11, nameWidth + 10, 16);
+    ctx.fillStyle = "rgba(255,255,255,0.95)";
+    ctx.fillText(p.name, p.x, labelY);
   }
 
   ctx.restore();

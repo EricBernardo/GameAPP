@@ -48,7 +48,7 @@ html, body {
 }
 
 #hud-score-label {
-  font-size: 10px;
+  font-size: 12px;
   opacity: 0.6;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -81,7 +81,7 @@ html, body {
   align-items: center;
   gap: 8px;
   color: #cfc4ff;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
 }
 

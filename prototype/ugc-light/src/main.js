@@ -77,6 +77,8 @@ function renderLevelList() {
     const delBtn = card.querySelector(".danger");
     if (delBtn) {
       delBtn.addEventListener("click", () => {
+        const confirmed = window.confirm(`Apagar a fase "${level.name}"? Esta ação não pode ser desfeita.`);
+        if (!confirmed) return;
         const updated = loadUserLevels().filter((l) => l.id !== level.id);
         saveUserLevels(updated);
         toast("Fase apagada.");

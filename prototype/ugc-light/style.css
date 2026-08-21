@@ -59,8 +59,8 @@ html, body {
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
   border-radius: 999px;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   font-size: 16px;
   display: flex;
   align-items: center;
@@ -138,7 +138,7 @@ html, body {
 }
 
 .level-card .level-tag {
-  font-size: 11px;
+  font-size: 12px;
   opacity: 0.55;
 }
 
@@ -151,6 +151,7 @@ html, body {
   border: none;
   border-radius: 10px;
   padding: 8px 10px;
+  min-height: 44px;
   font-size: 12px;
   font-weight: 700;
   background: rgba(255, 255, 255, 0.14);

@@ -42,7 +42,26 @@ let pendingSwapCells = null;
 let selected = null;
 let rivalTarget = 0;
 let rivalScore = 0;
-let totalCoins = Number(localStorage.getItem("pd_coins") || 0);
+
+function loadCoins(key) {
+  try {
+    const parsed = Number(localStorage.getItem(key));
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+  } catch {
+    return 0;
+  }
+}
+
+function saveCoins(key, value) {
+  try {
+    localStorage.setItem(key, String(value));
+  } catch {
+    // localStorage indisponível (modo privado, storage bloqueado etc.) —
+    // o jogo continua funcionando, só sem persistir moedas entre sessões.
+  }
+}
+
+let totalCoins = loadCoins("pd_coins");
 
 const particles = [];
 
@@ -184,7 +203,7 @@ function endMatch() {
   const won = score >= rivalTarget;
   const earned = won ? 40 : 15;
   totalCoins += earned;
-  localStorage.setItem("pd_coins", String(totalCoins));
+  saveCoins("pd_coins", totalCoins);
 
   endTitle.textContent = won ? "VITÓRIA!" : "QUASE LÁ!";
   endSubtitle.textContent = won
