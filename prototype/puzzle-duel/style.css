@@ -197,3 +197,117 @@ html, body {
   transform: translateY(4px);
   box-shadow: 0 2px 0 #2b3a9e, 0 4px 10px rgba(0, 0, 0, 0.4);
 }
+
+.btn-secondary {
+  border: none;
+  padding: 12px 28px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  min-height: 44px;
+}
+
+#start-coins-pill,
+#shop-coins-pill {
+  background: rgba(255, 209, 102, 0.15);
+  color: #ffd166;
+  font-weight: 800;
+  font-size: 15px;
+  padding: 6px 16px;
+  border-radius: 999px;
+}
+
+#booster-row {
+  position: absolute;
+  bottom: max(14px, env(safe-area-inset-bottom));
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  z-index: 5;
+}
+
+.booster-btn {
+  border: none;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  min-width: 56px;
+  min-height: 44px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.booster-btn:disabled {
+  opacity: 0.35;
+}
+
+.booster-icon {
+  font-size: 18px;
+}
+
+#booster-shop-list {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.booster-shop-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  padding: 12px 14px;
+  text-align: left;
+}
+
+.booster-shop-card .booster-shop-icon {
+  font-size: 26px;
+}
+
+.booster-shop-card .booster-shop-info {
+  flex: 1;
+}
+
+.booster-shop-card .booster-shop-name {
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.booster-shop-card .booster-shop-desc {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+.booster-shop-card .booster-shop-owned {
+  font-size: 11px;
+  opacity: 0.6;
+  margin-top: 2px;
+}
+
+.booster-shop-card button {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  min-height: 44px;
+  font-size: 13px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #06d6a0, #05a884);
+  color: #04241c;
+}
+
+.booster-shop-card button:disabled {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.5);
+}

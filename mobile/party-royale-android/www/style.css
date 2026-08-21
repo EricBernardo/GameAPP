@@ -213,3 +213,80 @@ html, body {
   transform: translateY(4px);
   box-shadow: 0 2px 0 #2b3a9e, 0 4px 10px rgba(0, 0, 0, 0.4);
 }
+
+.btn-secondary {
+  border: none;
+  padding: 12px 28px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  min-height: 44px;
+}
+
+.btn-secondary:active {
+  transform: translateY(2px);
+}
+
+#start-coins-pill,
+#shop-coins-pill {
+  background: rgba(255, 209, 102, 0.15);
+  color: #ffd166;
+  font-weight: 800;
+  font-size: 15px;
+  padding: 6px 16px;
+  border-radius: 999px;
+}
+
+#skin-list {
+  width: 100%;
+  max-width: 340px;
+  max-height: 50vh;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 4px;
+}
+
+.skin-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 10px 6px;
+  min-height: 44px;
+}
+
+.skin-card.equipped {
+  outline: 3px solid #06d6a0;
+}
+
+.skin-card .swatch {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.skin-card .skin-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.skin-card .skin-price {
+  font-size: 11px;
+  font-weight: 700;
+  color: #ffd166;
+}
+
+.skin-card .skin-status {
+  font-size: 11px;
+  font-weight: 800;
+  color: #06d6a0;
+}

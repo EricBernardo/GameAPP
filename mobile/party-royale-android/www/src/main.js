@@ -5,6 +5,7 @@ import {
   MOVE_ACCEL, MAX_SPEED, FRICTION,
 } from "./entities.js";
 import { clamp, distance, randRange, choice, PALETTE } from "./utils.js";
+import { SKINS, DEFAULT_SKIN_ID, skinById } from "./skins.js";
 
 const BOT_NAMES = [
   "Nino", "Zaza", "Kiko", "Miu", "Tuko", "Vex", "Loro", "Bibi",
@@ -61,8 +62,39 @@ function saveCoins(key, value) {
   }
 }
 
+function loadJson(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    return parsed ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveJson(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // storage indisponível — segue sem persistir.
+  }
+}
+
 let totalCoins = loadCoins("pr_coins");
-hudCoins.textContent = `🪙 ${totalCoins}`;
+let ownedSkins = loadJson("pr_skins", [DEFAULT_SKIN_ID]);
+if (!Array.isArray(ownedSkins) || !ownedSkins.includes(DEFAULT_SKIN_ID)) {
+  ownedSkins = [DEFAULT_SKIN_ID];
+}
+let equippedSkinId = loadJson("pr_equipped_skin", DEFAULT_SKIN_ID);
+if (!ownedSkins.includes(equippedSkinId)) equippedSkinId = DEFAULT_SKIN_ID;
+
+function refreshCoinDisplays() {
+  hudCoins.textContent = `🪙 ${totalCoins}`;
+  document.getElementById("start-coins-value").textContent = String(totalCoins);
+  document.getElementById("shop-coins-value").textContent = String(totalCoins);
+}
+refreshCoinDisplays();
 
 const input = new InputController();
 const particles = new ParticleSystem();
@@ -123,7 +155,7 @@ function spawnMatch() {
       id: i,
       x: arena.x + Math.cos(angle) * r,
       y: arena.y + Math.sin(angle) * r,
-      color: isBot ? shuffledColors[i % shuffledColors.length] : "#ffffff",
+      color: isBot ? shuffledColors[i % shuffledColors.length] : skinById(equippedSkinId).color,
       name: isBot ? shuffledNames[i % shuffledNames.length] : "Você",
       isBot,
     });
@@ -316,7 +348,7 @@ function endMatch(won, remaining) {
   const earned = won ? 50 : Math.max(5, 30 - remaining * 2);
   totalCoins += earned;
   saveCoins("pr_coins", totalCoins);
-  hudCoins.textContent = `🪙 ${totalCoins}`;
+  refreshCoinDisplays();
 
   endTitle.textContent = won ? "VITÓRIA!" : "ELIMINADO";
   endSubtitle.textContent = won
@@ -429,6 +461,61 @@ function loop(now) {
   drawArena();
   requestAnimationFrame(loop);
 }
+
+// ---------- Loja de skins ----------
+
+const screenShop = document.getElementById("screen-shop");
+let shopReturnScreen = screenStart;
+
+function renderShop() {
+  refreshCoinDisplays();
+  const list = document.getElementById("skin-list");
+  list.innerHTML = "";
+  for (const skin of SKINS) {
+    const owned = ownedSkins.includes(skin.id);
+    const equipped = equippedSkinId === skin.id;
+    const card = document.createElement("button");
+    card.className = "skin-card" + (equipped ? " equipped" : "");
+    card.innerHTML = `
+      <span class="swatch" style="background:${skin.color}"></span>
+      <span class="skin-name">${skin.name}</span>
+      <span class="${equipped ? "skin-status" : "skin-price"}">${equipped ? "Equipada" : owned ? "Toque p/ equipar" : `🪙 ${skin.price}`}</span>
+    `;
+    card.addEventListener("click", () => {
+      if (equipped) return;
+      if (!owned) {
+        if (totalCoins < skin.price) {
+          showToast("Moedas insuficientes.");
+          return;
+        }
+        totalCoins -= skin.price;
+        ownedSkins.push(skin.id);
+        saveCoins("pr_coins", totalCoins);
+        saveJson("pr_skins", ownedSkins);
+        showToast(`Skin "${skin.name}" comprada!`);
+      }
+      equippedSkinId = skin.id;
+      saveJson("pr_equipped_skin", equippedSkinId);
+      if (human) human.color = skin.color;
+      renderShop();
+    });
+    list.appendChild(card);
+  }
+}
+
+function openShop(fromScreen) {
+  shopReturnScreen = fromScreen;
+  fromScreen.classList.add("hidden");
+  renderShop();
+  screenShop.classList.remove("hidden");
+}
+
+document.getElementById("btn-shop").addEventListener("click", () => openShop(screenStart));
+document.getElementById("btn-shop-from-end").addEventListener("click", () => openShop(screenEnd));
+document.getElementById("btn-shop-back").addEventListener("click", () => {
+  screenShop.classList.add("hidden");
+  shopReturnScreen.classList.remove("hidden");
+});
 
 document.getElementById("btn-play").addEventListener("click", () => {
   unlockAudio();
