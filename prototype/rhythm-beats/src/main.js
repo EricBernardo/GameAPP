@@ -1,6 +1,6 @@
 import {
   LANE_COUNT, LANE_FREQS, LANE_KEYS, LANE_NOTE_NAMES,
-  CAMPAIGN_SONGS, ROCK_SONGS, THEMES,
+  CAMPAIGN_SONGS, ROCK_SONGS, SHOP_PACKS, THEMES,
   NOTE_TRAVEL_TIME, PERFECT_WINDOW, GOOD_WINDOW, MISS_WINDOW, buildChart,
   ENERGY_MAX, ENERGY_LOSS_PER_MISS, ENERGY_GAIN_PER_HIT,
 } from "./songs.js";
@@ -135,6 +135,10 @@ function isCampaignUnlocked(index) {
   return index < state.unlockedSongs;
 }
 
+function packMeta(packId) {
+  return SHOP_PACKS.find((p) => p.id === packId) || SHOP_PACKS[0];
+}
+
 function isRockOwned(song) {
   return state.ownedRockIds.includes(song.id);
 }
@@ -167,24 +171,25 @@ function renderMenu() {
 
   const rockTitle = document.createElement("div");
   rockTitle.className = "list-heading";
-  rockTitle.textContent = "Rock clássico";
+  rockTitle.textContent = "Compradas";
   list.appendChild(rockTitle);
 
   const ownedRock = ROCK_SONGS.filter(isRockOwned);
   if (ownedRock.length === 0) {
     const empty = document.createElement("p");
     empty.className = "list-empty";
-    empty.textContent = "Compre riffs na loja — só rock clássico.";
+    empty.textContent = "Compre na loja: estilos Elvis, Sabbath, Metallica e Beatles (originais).";
     list.appendChild(empty);
   } else {
     for (const song of ownedRock) {
+      const pack = packMeta(song.pack);
       const btn = document.createElement("button");
       btn.className = "song-card rock";
       btn.innerHTML = `
-        <span class="song-icon">🎸</span>
+        <span class="song-icon">${pack.icon}</span>
         <span class="song-info">
           <span class="song-name">${song.name}</span>
-          <span class="song-meta">Rock clássico · ${song.bpm} BPM · ${song.notes.length} notas</span>
+          <span class="song-meta">${pack.label} · ${song.bpm} BPM · ${song.notes.length} notas</span>
         </span>
       `;
       btn.addEventListener("click", () => startSong(song));
@@ -208,16 +213,21 @@ function renderShop() {
   document.getElementById("shop-coins").textContent = `🎵 ${state.coins}`;
   const rockList = document.getElementById("rock-list");
   rockList.innerHTML = "";
-  for (const song of ROCK_SONGS) {
+  for (const pack of SHOP_PACKS) {
+    const heading = document.createElement("h3");
+    heading.className = "shop-section";
+    heading.textContent = `${pack.icon} ${pack.label}`;
+    rockList.appendChild(heading);
+    for (const song of ROCK_SONGS.filter((s) => s.pack === pack.id)) {
     const owned = isRockOwned(song);
     const card = document.createElement("button");
     card.type = "button";
     card.className = "theme-card";
     card.innerHTML = `
-      <span class="song-icon">🎸</span>
+      <span class="song-icon">${pack.icon}</span>
       <div class="theme-info">
         <div class="theme-name">${song.name}</div>
-        <div class="song-meta">Rock clássico · ${song.bpm} BPM</div>
+        <div class="song-meta">${pack.label} · ${song.bpm} BPM</div>
       </div>
     `;
     const badge = document.createElement("span");
@@ -246,6 +256,7 @@ function renderShop() {
       renderShop();
     });
     rockList.appendChild(card);
+    }
   }
 
   document.getElementById("shop-coins").textContent = `🎵 ${state.coins}`;

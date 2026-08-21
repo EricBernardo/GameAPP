@@ -21,7 +21,7 @@
       <p class="subtitle">Toque as notas (Dó, Mi, Sol, Dó) no tempo — sem gacha: tudo se desbloqueia jogando.</p>
       <div id="coins-pill">🎵 <span id="coins-value">0</span> notas</div>
       <div id="song-list"></div>
-      <button id="btn-shop" class="btn-secondary">🎸 Loja — rock clássico</button>
+      <button id="btn-shop" class="btn-secondary">🎸 Loja de músicas</button>
     </section>
 
     <section id="view-play" class="view hidden">
@@ -53,8 +53,7 @@
         <h2>Loja</h2>
         <div id="shop-coins">🎵 0</div>
       </header>
-      <p class="shop-hint">À venda só há rock clássico — riffs originais no estilo dos anos 70/80, sem hits com copyright.</p>
-      <h3 class="shop-section">Rock clássico</h3>
+      <p class="shop-hint">Não vendemos hits com copyright. São 5 faixas originais no estilo de cada artista (Elvis, Black Sabbath, Metallica, Beatles) mais rock clássico.</p>
       <div id="rock-list"></div>
       <h3 class="shop-section">Temas visuais</h3>
       <div id="theme-list"></div>
@@ -66,7 +65,7 @@
   <script type="module" src="src/main.js"></script>
   <script>
     if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+      window.addEventListener("load", () => navigator.serviceWorker.register("sw.js?v=2").catch(() => {}));
     }
   </script>
 </body>

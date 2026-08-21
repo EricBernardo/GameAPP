@@ -51,7 +51,8 @@ const GRACE_PERIOD = 4;
 // estreitos, que são o hardware predominante do público-alvo).
 let ARENA_MAX = 260;
 function computeArenaMax() {
-  const minSide = Math.min(window.innerWidth, window.innerHeight);
+  const { w, h } = viewSize();
+  const minSide = Math.min(w, h);
   return clamp(minSide * 0.46, 150, 420);
 }
 
@@ -136,16 +137,27 @@ let shakeTime = 0;
 let shakeMag = 0;
 let currentLayoutName = "";
 
+function viewSize() {
+  const vv = window.visualViewport;
+  if (vv && vv.height > 0) return { w: vv.width, h: vv.height };
+  return { w: window.innerWidth, h: window.innerHeight };
+}
+
 function resize() {
-  canvas.width = window.innerWidth * devicePixelRatio;
-  canvas.height = window.innerHeight * devicePixelRatio;
-  canvas.style.width = `${window.innerWidth}px`;
-  canvas.style.height = `${window.innerHeight}px`;
-  arena.x = window.innerWidth / 2;
-  arena.y = window.innerHeight / 2;
+  const { w, h } = viewSize();
+  canvas.width = w * devicePixelRatio;
+  canvas.height = h * devicePixelRatio;
+  canvas.style.width = `${w}px`;
+  canvas.style.height = `${h}px`;
+  arena.x = w / 2;
+  arena.y = h / 2;
   ARENA_MAX = computeArenaMax();
 }
 window.addEventListener("resize", resize);
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", resize);
+  window.visualViewport.addEventListener("scroll", resize);
+}
 resize();
 
 function showToast(text) {
@@ -227,14 +239,15 @@ function updateBot(p, dt) {
     }
 
     const canAttack = matchTime >= GRACE_PERIOD;
-    if (canAttack && nearest && nearestDist < 150 && p.canDash() && Math.random() < 0.03) {
+    const dashChance = matchTime > 25 ? 0.08 : 0.05;
+    if (canAttack && nearest && nearestDist < 190 && p.canDash() && Math.random() < dashChance) {
       const dx = nearest.x - p.x;
       const dy = nearest.y - p.y;
       p.dash(dx, dy);
       particles.burst(p.x, p.y, p.color, 8, 120);
     }
 
-    if (canAttack && nearest && nearestDist < 220) {
+    if (canAttack && nearest && nearestDist < 280) {
       targetX = nearest.x;
       targetY = nearest.y;
     } else {
@@ -325,8 +338,9 @@ function update(dt) {
     p.squash = 1 + (p.squash - 1) * Math.max(0, 1 - dt * 8);
 
     const speed = Math.hypot(p.vx, p.vy);
-    if (speed > MAX_SPEED) {
-      const scale = MAX_SPEED / speed;
+    const cap = p.dashFlash > 0 ? MAX_SPEED * 1.9 : MAX_SPEED;
+    if (speed > cap) {
+      const scale = cap / speed;
       p.vx *= scale;
       p.vy *= scale;
     }
@@ -369,29 +383,65 @@ function update(dt) {
   hudAlive.textContent = `Vivos: ${stillAlive.length}`;
 
   if (!human.alive) {
-    endMatch(false, stillAlive.length);
+    endMatch({ won: false, remaining: stillAlive.length });
     return;
   }
   if (stillAlive.length <= 1) {
-    endMatch(stillAlive.length === 1 && stillAlive[0] === human, 0);
+    endMatch({
+      won: stillAlive.length === 1 && stillAlive[0] === human,
+      remaining: 0,
+      place: 1,
+    });
+    return;
+  }
+  if (timeLeft <= 0) {
+    const ranked = stillAlive.slice().sort((a, b) => (
+      distance(a.x, a.y, arena.x, arena.y) - distance(b.x, b.y, arena.x, arena.y)
+    ));
+    const place = (TOTAL_PLAYERS - stillAlive.length) + ranked.findIndex((p) => p === human) + 1;
+    endMatch({
+      won: place === 1,
+      remaining: stillAlive.length - 1,
+      place,
+      timedOut: true,
+      field: TOTAL_PLAYERS,
+    });
   }
 }
 
-function endMatch(won, remaining) {
+function endMatch({ won, remaining, place, timedOut = false, field = TOTAL_PLAYERS }) {
+  if (!running) return;
   running = false;
-  const earned = won ? 50 : Math.max(5, 30 - remaining * 2);
+  let earned = won ? 50 : Math.max(8, 28 - remaining * 2);
+  if (!won && ownedSkins.length <= 1 && totalCoins + earned < 40) {
+    earned = 40 - totalCoins;
+  }
   totalCoins += earned;
   saveCoins("pr_coins", totalCoins);
   refreshCoinDisplays();
 
+  const finishPlace = place || remaining + 1;
   endTitle.textContent = won ? "VITÓRIA!" : "ELIMINADO";
-  endSubtitle.textContent = won
-    ? "Você foi o último a sobreviver na arena."
-    : "Continue tentando — quase lá!";
+  if (won) {
+    endSubtitle.textContent = timedOut
+      ? "O tempo acabou — você estava mais perto do centro."
+      : "Você foi o último a sobreviver na arena.";
+  } else {
+    endSubtitle.textContent = timedOut
+      ? `Fim do tempo — ${finishPlace}º de ${field} (mais perto do centro vence).`
+      : `Você ficou em ${finishPlace}º de ${TOTAL_PLAYERS}.`;
+  }
   if (won) sfx.win();
   else sfx.lose();
   endCoins.textContent = `+${earned} 🪙`;
   screenEnd.classList.remove("hidden");
+  const shopFromEnd = document.getElementById("btn-shop-from-end");
+  if (shopFromEnd && totalCoins >= 40) {
+    shopFromEnd.classList.remove("btn-secondary");
+    shopFromEnd.classList.add("btn-primary");
+    shopFromEnd.textContent = "🎨 LOJA — Coral por 40 🪙";
+    showToast("Gaste na loja de skins — a Coral custa 40 🪙");
+  }
 }
 
 function drawArena() {
@@ -406,8 +456,9 @@ function drawArena() {
     shakeMag = 0;
   }
 
+  const { w, h } = viewSize();
   ctx.fillStyle = "#0d0f1a";
-  ctx.fillRect(-20, -20, window.innerWidth + 40, window.innerHeight + 40);
+  ctx.fillRect(-20, -20, w + 40, h + 40);
 
   ctx.save();
   ctx.beginPath();

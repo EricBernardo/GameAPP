@@ -56,66 +56,180 @@ export const CAMPAIGN_SONGS = [
 // Não são gravações nem melodias de hits com copyright — só o clima
 // da época, compráveis com as notas ganhas no jogo.
 export const ROCK_LANE_FREQS = [164.81, 220.0, 246.94, 329.63];
+const ELVIS_FREQS = [196.0, 246.94, 293.66, 392.0];
+const SABBATH_FREQS = [82.41, 110.0, 146.83, 164.81];
+const METAL_FREQS = [110.0, 146.83, 164.81, 220.0];
+const BEATLES_FREQS = [261.63, 329.63, 392.0, 523.25];
+
+export const SHOP_PACKS = [
+  { id: "classic", label: "Rock clássico", icon: "🎸" },
+  { id: "elvis", label: "Estilo Elvis", icon: "🎤" },
+  { id: "sabbath", label: "Estilo Black Sabbath", icon: "🔔" },
+  { id: "metallica", label: "Estilo Metallica", icon: "⚡" },
+  { id: "beatles", label: "Estilo Beatles", icon: "🌼" },
+];
+
+function track(id, name, bpm, price, pack, freqs, notes) {
+  return { id, name, bpm, price, pack, style: "rock", freqs, notes };
+}
 
 export const ROCK_SONGS = [
-  {
-    id: "rock-estrada",
-    name: "Estrada de Couro",
-    bpm: 118,
-    price: 60,
-    style: "rock",
-    freqs: ROCK_LANE_FREQS,
-    notes: [
-      ...section(0, [0, 0, 1, 0, 2, 0, 1, 0], 1),
-      ...section(8, [0, 1, 2, 1, 0, 1, 2, 3], 1),
-      ...section(16, [0, 2, 0, 2, 1, 3, 1, 3, 0, 2, 0, 2, 1, 3, 2, 0], 0.5),
-      ...section(24, [0, 0, 1, 2, 0, 3, 2, 1], 1),
-    ],
-  },
-  {
-    id: "rock-garagem",
-    name: "Noite na Garagem",
-    bpm: 126,
-    price: 90,
-    style: "rock",
-    freqs: ROCK_LANE_FREQS,
-    notes: [
-      ...section(0, [0, 2, 0, 2, 1, 3, 1, 3], 1),
-      ...section(8, [0, 0, 2, 3, 1, 1, 2, 0], 1),
-      ...section(16, [2, 0, 2, 0, 3, 1, 3, 1, 2, 0, 3, 1, 0, 2, 1, 3], 0.5),
-      ...section(24, [0, 1, 0, 3, 2, 1, 0, 0], 1),
-    ],
-  },
-  {
-    id: "rock-riff",
-    name: "Riff Elétrico",
-    bpm: 132,
-    price: 120,
-    style: "rock",
-    freqs: ROCK_LANE_FREQS,
-    notes: [
-      ...section(0, [0, 1, 0, 2, 0, 1, 3, 0], 1),
-      ...section(8, [0, 1, 2, 0, 1, 2, 3, 2, 0, 1, 2, 0, 1, 2, 3, 1], 0.5),
-      ...section(16, [3, 2, 1, 0, 0, 1, 2, 3], 1),
-      ...section(24, [0, 2, 1, 3, 0, 2, 1, 3, 2, 0, 3, 1, 2, 0, 3, 1], 0.5),
-      ...section(32, [0, 0, 3, 2, 1, 0], 1),
-    ],
-  },
-  {
-    id: "rock-asfalto",
-    name: "Solo do Asfalto",
-    bpm: 138,
-    price: 150,
-    style: "rock",
-    freqs: ROCK_LANE_FREQS,
-    notes: [
-      ...section(0, [3, 2, 3, 1, 3, 2, 0, 3], 1),
-      ...section(8, [3, 1, 2, 0, 3, 1, 2, 0, 3, 2, 1, 0, 3, 2, 1, 3], 0.5),
-      ...section(16, [0, 2, 3, 2, 0, 1, 3, 1], 1),
-      ...section(24, [3, 3, 2, 1, 0, 1, 2, 3, 0, 2, 3, 1, 0, 2, 3, 3], 0.5),
-      ...section(32, [3, 2, 1, 0, 0, 2, 3], 1),
-    ],
-  },
+  track("rock-estrada", "Leather Highway", 118, 60, "classic", ROCK_LANE_FREQS, [
+    ...section(0, [0, 0, 1, 0, 2, 0, 1, 0], 1),
+    ...section(8, [0, 1, 2, 1, 0, 1, 2, 3], 1),
+    ...section(16, [0, 2, 0, 2, 1, 3, 1, 3, 0, 2, 0, 2, 1, 3, 2, 0], 0.5),
+    ...section(24, [0, 0, 1, 2, 0, 3, 2, 1], 1),
+  ]),
+  track("rock-garagem", "Garage Night", 126, 90, "classic", ROCK_LANE_FREQS, [
+    ...section(0, [0, 2, 0, 2, 1, 3, 1, 3], 1),
+    ...section(8, [0, 0, 2, 3, 1, 1, 2, 0], 1),
+    ...section(16, [2, 0, 2, 0, 3, 1, 3, 1, 2, 0, 3, 1, 0, 2, 1, 3], 0.5),
+    ...section(24, [0, 1, 0, 3, 2, 1, 0, 0], 1),
+  ]),
+  track("rock-riff", "Electric Riff", 132, 120, "classic", ROCK_LANE_FREQS, [
+    ...section(0, [0, 1, 0, 2, 0, 1, 3, 0], 1),
+    ...section(8, [0, 1, 2, 0, 1, 2, 3, 2, 0, 1, 2, 0, 1, 2, 3, 1], 0.5),
+    ...section(16, [3, 2, 1, 0, 0, 1, 2, 3], 1),
+    ...section(24, [0, 2, 1, 3, 0, 2, 1, 3, 2, 0, 3, 1, 2, 0, 3, 1], 0.5),
+    ...section(32, [0, 0, 3, 2, 1, 0], 1),
+  ]),
+  track("rock-asfalto", "Asphalt Solo", 138, 150, "classic", ROCK_LANE_FREQS, [
+    ...section(0, [3, 2, 3, 1, 3, 2, 0, 3], 1),
+    ...section(8, [3, 1, 2, 0, 3, 1, 2, 0, 3, 2, 1, 0, 3, 2, 1, 3], 0.5),
+    ...section(16, [0, 2, 3, 2, 0, 1, 3, 1], 1),
+    ...section(24, [3, 3, 2, 1, 0, 1, 2, 3, 0, 2, 3, 1, 0, 2, 3, 3], 0.5),
+    ...section(32, [3, 2, 1, 0, 0, 2, 3], 1),
+  ]),
+
+  track("elvis-jukebox", "Neon Jukebox", 168, 70, "elvis", ELVIS_FREQS, [
+    ...section(0, [0, 2, 0, 3, 1, 2, 0, 2], 1),
+    ...section(8, [0, 2, 1, 3, 0, 2, 1, 3, 0, 2, 3, 1, 0, 2, 1, 0], 0.5),
+    ...section(16, [2, 2, 0, 3, 1, 1, 0, 2], 1),
+    ...section(24, [0, 3, 2, 0, 1, 3, 2, 0], 1),
+  ]),
+  track("elvis-cadillac", "Cadillacs on Main", 156, 80, "elvis", ELVIS_FREQS, [
+    ...section(0, [1, 0, 2, 0, 3, 0, 2, 1], 1),
+    ...section(8, [0, 1, 0, 2, 0, 3, 0, 2, 1, 0, 2, 0, 3, 1, 2, 0], 0.5),
+    ...section(16, [3, 2, 1, 0, 0, 2, 3, 1], 1),
+    ...section(24, [0, 2, 0, 2, 3, 1, 3, 0], 1),
+  ]),
+  track("elvis-shake", "Midnight Shake", 174, 90, "elvis", ELVIS_FREQS, [
+    ...section(0, [0, 1, 2, 0, 3, 2, 1, 0], 1),
+    ...section(8, [2, 0, 2, 0, 3, 1, 3, 1, 2, 0, 1, 3, 0, 2, 1, 0], 0.5),
+    ...section(16, [0, 0, 3, 2, 1, 2, 0, 3], 1),
+    ...section(24, [1, 3, 0, 2, 1, 3, 0, 0], 1),
+  ]),
+  track("elvis-gravata", "Sequined Tie", 148, 100, "elvis", ELVIS_FREQS, [
+    ...section(0, [2, 1, 0, 2, 3, 1, 0, 2], 1),
+    ...section(8, [0, 2, 3, 2, 0, 1, 2, 3], 1),
+    ...section(16, [1, 0, 1, 2, 1, 0, 1, 3, 2, 0, 2, 1, 0, 3, 2, 1], 0.5),
+    ...section(24, [0, 2, 1, 3, 0, 2, 0, 0], 1),
+  ]),
+  track("elvis-radio", "AM Radio 1957", 162, 110, "elvis", ELVIS_FREQS, [
+    ...section(0, [0, 3, 0, 2, 0, 3, 1, 0], 1),
+    ...section(8, [0, 2, 3, 1, 0, 2, 3, 1, 0, 3, 2, 1, 0, 2, 3, 0], 0.5),
+    ...section(16, [3, 3, 2, 0, 1, 2, 0, 3], 1),
+    ...section(24, [0, 1, 0, 2, 0, 3, 2, 0], 1),
+  ]),
+
+  track("sabbath-pedreira", "Quarry Bell", 76, 70, "sabbath", SABBATH_FREQS, [
+    ...section(0, [0, 0, 1, 0, 0, 2, 0, 0], 1),
+    ...section(8, [0, 1, 0, 2, 0, 1, 0, 3], 1),
+    ...section(16, [0, 0, 2, 2, 1, 0, 0, 1], 1),
+    ...section(24, [0, 3, 0, 2, 0, 1, 0, 0], 1),
+  ]),
+  track("sabbath-nevoa", "Birmingham Fog", 82, 80, "sabbath", SABBATH_FREQS, [
+    ...section(0, [0, 1, 0, 1, 2, 0, 1, 0], 1),
+    ...section(8, [0, 0, 2, 0, 3, 0, 2, 0], 1),
+    ...section(16, [1, 0, 1, 2, 0, 0, 3, 0], 1),
+    ...section(24, [0, 2, 0, 1, 0, 3, 0, 0], 1),
+  ]),
+  track("sabbath-marcha", "Steel March", 70, 90, "sabbath", SABBATH_FREQS, [
+    ...section(0, [0, 0, 0, 1, 0, 0, 2, 0], 1),
+    ...section(8, [0, 1, 2, 0, 0, 1, 2, 3], 1),
+    ...section(16, [0, 0, 1, 0, 2, 0, 1, 0], 1),
+    ...section(24, [2, 0, 2, 0, 1, 0, 0, 0], 1),
+  ]),
+  track("sabbath-catedral", "Smoke Cathedral", 88, 100, "sabbath", SABBATH_FREQS, [
+    ...section(0, [0, 2, 0, 3, 0, 2, 0, 1], 1),
+    ...section(8, [0, 0, 1, 2, 0, 0, 1, 3], 1),
+    ...section(16, [2, 2, 0, 1, 0, 3, 0, 0], 1),
+    ...section(24, [0, 1, 0, 2, 0, 3, 2, 0], 1),
+  ]),
+  track("sabbath-pedra", "Stone Riff", 74, 110, "sabbath", SABBATH_FREQS, [
+    ...section(0, [0, 0, 2, 0, 0, 1, 0, 0], 1),
+    ...section(8, [0, 2, 0, 2, 1, 0, 3, 0], 1),
+    ...section(16, [0, 0, 0, 3, 2, 1, 0, 0], 1),
+    ...section(24, [1, 0, 2, 0, 1, 0, 0, 0], 1),
+  ]),
+
+  track("metal-raio", "Garage Lightning", 168, 80, "metallica", METAL_FREQS, [
+    ...section(0, [0, 1, 0, 2, 0, 1, 0, 3], 0.5),
+    ...section(4, [0, 2, 1, 3, 0, 2, 1, 3], 0.5),
+    ...section(8, [0, 0, 1, 2, 0, 3, 2, 1], 1),
+    ...section(16, [0, 1, 2, 3, 2, 1, 0, 1, 0, 2, 1, 3, 0, 2, 3, 0], 0.5),
+    ...section(24, [0, 3, 0, 2, 0, 1, 0, 0], 1),
+  ]),
+  track("metal-trovao", "Thunder Trail", 176, 90, "metallica", METAL_FREQS, [
+    ...section(0, [0, 2, 0, 3, 1, 2, 0, 3], 0.5),
+    ...section(4, [0, 1, 2, 1, 0, 3, 2, 1], 0.5),
+    ...section(8, [0, 0, 2, 3, 0, 1, 2, 3], 1),
+    ...section(16, [3, 2, 1, 0, 1, 2, 3, 2, 0, 1, 0, 3, 2, 1, 0, 3], 0.5),
+    ...section(24, [0, 2, 3, 2, 0, 1, 0, 0], 1),
+  ]),
+  track("metal-martelo", "Double Hammer", 184, 100, "metallica", METAL_FREQS, [
+    ...section(0, [0, 0, 1, 0, 2, 0, 1, 0], 0.5),
+    ...section(4, [3, 1, 3, 1, 2, 0, 2, 0], 0.5),
+    ...section(8, [0, 1, 2, 3, 0, 1, 2, 3], 1),
+    ...section(16, [0, 2, 0, 2, 1, 3, 1, 3, 0, 2, 3, 1, 0, 2, 1, 0], 0.5),
+    ...section(24, [0, 3, 2, 1, 0, 0, 2, 3], 1),
+  ]),
+  track("metal-chamas", "Burning Asphalt", 160, 110, "metallica", METAL_FREQS, [
+    ...section(0, [0, 1, 2, 0, 1, 2, 3, 0], 1),
+    ...section(8, [0, 3, 2, 1, 0, 3, 2, 1, 0, 2, 1, 3, 0, 2, 1, 0], 0.5),
+    ...section(16, [2, 0, 2, 3, 1, 0, 1, 3], 1),
+    ...section(24, [0, 1, 0, 2, 0, 3, 2, 0], 0.5),
+    ...section(28, [0, 0, 3, 2, 1, 0], 1),
+  ]),
+  track("metal-volt", "Volt 220", 192, 120, "metallica", METAL_FREQS, [
+    ...section(0, [0, 1, 0, 1, 2, 0, 2, 3], 0.5),
+    ...section(4, [0, 2, 1, 3, 0, 2, 1, 3], 0.5),
+    ...section(8, [0, 3, 0, 2, 0, 1, 0, 3], 0.5),
+    ...section(12, [1, 0, 2, 0, 3, 1, 2, 0], 1),
+    ...section(20, [0, 1, 2, 3, 3, 2, 1, 0, 0, 2, 1, 3, 0, 2, 3, 0], 0.5),
+    ...section(28, [0, 0, 2, 3], 1),
+  ]),
+
+  track("beatles-terraco", "Liverpool Rooftop", 114, 70, "beatles", BEATLES_FREQS, [
+    ...section(0, [0, 1, 2, 1, 0, 2, 3, 2], 1),
+    ...section(8, [0, 2, 1, 3, 0, 1, 2, 0], 1),
+    ...section(16, [1, 0, 1, 2, 3, 2, 1, 0], 1),
+    ...section(24, [0, 1, 0, 2, 1, 3, 2, 0], 1),
+  ]),
+  track("beatles-harmonia", "Four-Part Harmony", 108, 80, "beatles", BEATLES_FREQS, [
+    ...section(0, [0, 2, 1, 3, 2, 1, 0, 2], 1),
+    ...section(8, [3, 2, 1, 0, 1, 2, 3, 1], 1),
+    ...section(16, [0, 1, 2, 3, 2, 1, 2, 0], 1),
+    ...section(24, [1, 3, 2, 0, 1, 2, 0, 0], 1),
+  ]),
+  track("beatles-postal", "Postcard from 1964", 122, 90, "beatles", BEATLES_FREQS, [
+    ...section(0, [0, 1, 0, 2, 1, 3, 2, 1], 1),
+    ...section(8, [0, 2, 3, 2, 1, 0, 1, 2], 1),
+    ...section(16, [0, 1, 2, 1, 0, 1, 2, 3, 2, 1, 0, 2, 1, 3, 2, 0], 0.5),
+    ...section(24, [0, 2, 1, 3, 0, 1, 0, 0], 1),
+  ]),
+  track("beatles-harmonica", "Studio Harmonica", 100, 100, "beatles", BEATLES_FREQS, [
+    ...section(0, [1, 0, 2, 0, 1, 3, 2, 1], 1),
+    ...section(8, [0, 0, 1, 2, 3, 2, 1, 0], 1),
+    ...section(16, [2, 1, 0, 1, 2, 3, 1, 0], 1),
+    ...section(24, [0, 1, 2, 0, 3, 2, 1, 0], 1),
+  ]),
+  track("beatles-mersey", "Mersey Roundabout", 128, 110, "beatles", BEATLES_FREQS, [
+    ...section(0, [0, 2, 1, 3, 0, 2, 1, 0], 1),
+    ...section(8, [1, 2, 3, 2, 1, 0, 2, 3], 1),
+    ...section(16, [0, 1, 0, 2, 0, 3, 1, 2, 0, 1, 2, 3, 2, 1, 0, 2], 0.5),
+    ...section(24, [3, 2, 1, 0, 1, 2, 0, 0], 1),
+  ]),
 ];
 
 export const THEMES = [

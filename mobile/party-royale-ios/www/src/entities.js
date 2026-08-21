@@ -1,16 +1,14 @@
 import { distance, clamp, randRange } from "./utils.js";
 
 export const PLAYER_RADIUS = 15;
-export const DASH_COOLDOWN = 1.4;
-export const DASH_IMPULSE = 420;
+export const DASH_COOLDOWN = 1.15;
+export const DASH_IMPULSE = 560;
 export const MOVE_ACCEL = 900;
-export const MAX_SPEED = 240;
-export const FRICTION = 4.2;
-export const COLLISION_RESTITUTION = 0.8;
-// Curta janela de "imunidade a impacto" após ser atingido, para impedir que
-// vários acertos em sequência (ex.: dois bots ao mesmo tempo) somem impulso
-// e ejetem o jogador da arena antes que ele tenha chance de reagir.
-export const HIT_COOLDOWN = 0.35;
+export const MAX_SPEED = 260;
+export const FRICTION = 3.8;
+export const COLLISION_RESTITUTION = 1.05;
+// Imunidade curta o bastante para um dash ainda ejetar, sem combo infinito.
+export const HIT_COOLDOWN = 0.2;
 
 export class Player {
   constructor({ id, x, y, color, name, isBot }) {
