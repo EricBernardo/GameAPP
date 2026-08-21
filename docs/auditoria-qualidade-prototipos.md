@@ -64,22 +64,31 @@ Cada auditoria, olhando por sua própria lente, chegou a uma recomendação dife
 
 ## Roteiro de correções recomendado
 
-**Fase 1 — Correções sistêmicas de baixo custo/alto impacto (aplicáveis aos 7 de uma vez):**
-1. Remover `user-scalable=no` dos 7 `index.html`.
-2. Padronizar `.icon-btn`/botões de ação para 44×44px mínimo.
-3. Adicionar `try/catch`/validação em toda leitura de `localStorage` (Party Royale e Puzzle Duel).
-4. Adicionar confirmação antes de ações destrutivas (excluir fase, remover jogador).
+> **Status: as 4 fases abaixo já foram implementadas e estão na `main`.** Esta seção documenta o que foi feito e por quê; os PRs/commits correspondentes estão no histórico do repositório.
 
-**Fase 2 — Fechar o "loop vazio" de moeda em A e B:**
-5. Criar loja simples de skins/boosters em Party Royale e Puzzle Duel — o problema mais citado nesta auditoria e o de maior retorno relativo por esforço.
+**Fase 1 — Correções sistêmicas de baixo custo/alto impacto (aplicáveis aos 7 de uma vez):** ✅ concluída
+1. ✅ Removido `user-scalable=no` dos 7 `index.html`.
+2. ✅ Padronizados `.icon-btn`/botões de ação para 44×44px mínimo, e textos abaixo de 12px elevados ao mínimo recomendado.
+3. ✅ Adicionado `try/catch`/validação em toda leitura de `localStorage` (Party Royale e Puzzle Duel).
+4. ✅ Adicionada confirmação antes de ações destrutivas (excluir fase, remover jogador).
 
-**Fase 3 — Aprofundar conteúdo e juice nos protótipos com menor nota de design:**
-6. Som e partículas em Puzzle Duel, UGC Light e Idle Creatures.
-7. Mais variedade de conteúdo (arenas em A, tabuleiros em B, fases em C, músicas em F, perguntas em G).
+**Fase 2 — Fechar o "loop vazio" de moeda em A e B:** ✅ concluída
+5. ✅ Criada loja de 10 skins em Party Royale e loja de 3 boosters (embaralhar, +10s, bomba 3x3) em Puzzle Duel — o problema mais citado nesta auditoria.
 
-**Fase 4 — Decisão estratégica antes de continuar investindo em C e F:**
-8. UGC Light: decidir se vale investir em backend de UGC/moderação agora, ou pausar o conceito até haver orçamento para essa peça específica.
-9. Rhythm Beats: decidir formalmente (por escrito) que a lacuna de monetização será resolvida com coleção determinística, nunca gacha — antes que a pressão comercial torne isso uma decisão apressada.
+**Fase 3 — Aprofundar conteúdo e juice nos protótipos com menor nota de design:** ✅ concluída
+6. ✅ Som e partículas adicionados em Puzzle Duel, UGC Light e Idle Creatures (que não tinham nenhum).
+7. ✅ Mais variedade de conteúdo: 3 layouts de arena em Party Royale, blocos de gelo em Puzzle Duel, plataforma móvel + 4 novas fases (total 6) em UGC Light, charts com seções distintas + barra de risco em Rhythm Beats, banco de perguntas expandido de 15 para 44 em Party Trivia, habitat visual em Idle Creatures.
+8. ✅ Corrigidos de passagem: julgamento "Perfeito/Bom/Faltou" ganhou uma 3ª categoria "OK" (a faixa "quase lá" antes inexistente em Rhythm Beats), e o shuffle de nomes/cores em Party Royale e perguntas em Party Trivia foi trocado para Fisher-Yates (sem viés).
+
+**Fase 4 — Decisão estratégica sobre C e F:** ✅ concluída
+9. ✅ UGC Light: implementado um filtro básico de conteúdo para nomes de fase (`src/moderation.js`), com uma política formal documentada no README sobre o que ainda falta (moderação server-side, denúncia, revisão humana) antes de qualquer compartilhamento real.
+10. ✅ Rhythm Beats: compromisso formal contra gacha documentado por escrito no README — qualquer coleção visual futura será sempre desbloqueável por progressão ou compra direta, nunca por sorteio.
+
+### O que ficou fora deste roteiro (próximos passos além da auditoria)
+
+- Teste com usuários reais (todas as correções acima foram validadas por revisão de código e testes automatizados em navegador, não por jogadores humanos do público-alvo).
+- Backend de UGC/moderação de produção para o Conceito C, e qualquer forma de multiplayer real (hoje todos os "oponentes" são bots/simulações locais nos 7 protótipos).
+- Build nativo Android/iOS para os outros 6 protótipos (hoje só o Party Royale tem `.apk`/projeto Xcode).
 
 ---
 
