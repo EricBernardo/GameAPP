@@ -223,14 +223,34 @@ html, body {
 
 .tap-btn {
   flex: 1;
-  height: 64px;
+  height: 72px;
   border: none;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
   font-weight: 800;
-  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
   transition: transform 0.06s ease;
+}
+
+.tap-btn .tap-note {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.tap-btn .tap-name {
+  font-size: 12px;
+  letter-spacing: 0.3px;
+}
+
+.tap-btn .tap-key {
+  font-size: 10px;
+  opacity: 0.55;
+  font-weight: 700;
 }
 
 .tap-btn.pressed {
@@ -284,11 +304,45 @@ html, body {
   font-weight: 700;
 }
 
-#theme-list {
+.list-heading {
+  width: 100%;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  opacity: 0.55;
+  margin: 10px 0 2px;
+}
+
+.list-empty {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.65;
+  text-align: left;
+}
+
+.song-card.rock {
+  background: rgba(255, 95, 109, 0.12);
+}
+
+.shop-hint {
+  margin: 10px 0 0;
+  font-size: 13px;
+  opacity: 0.75;
+  line-height: 1.4;
+}
+
+.shop-section {
+  margin: 16px 0 8px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+#rock-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: 14px;
 }
 
 .theme-card {
@@ -326,9 +380,14 @@ html, body {
   flex: 1;
 }
 
-.theme-card .theme-name {
-  font-weight: 800;
-  font-size: 14px;
+.theme-card .song-icon {
+  font-size: 26px;
+}
+
+.theme-card .song-meta {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 2px;
 }
 
 .theme-badge {

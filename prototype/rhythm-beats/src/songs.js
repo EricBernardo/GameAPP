@@ -1,6 +1,7 @@
 export const LANE_COUNT = 4;
 export const LANE_FREQS = [261.63, 329.63, 392.0, 523.25];
 export const LANE_KEYS = ["D", "F", "J", "K"];
+export const LANE_NOTE_NAMES = ["Dó", "Mi", "Sol", "Dó"];
 
 // Padrões de fase escritos à mão e fixos — o "chart" nunca muda entre
 // execuções, como em jogos de ritmo reais, sem qualquer elemento
@@ -9,10 +10,14 @@ export const LANE_KEYS = ["D", "F", "J", "K"];
 // final de desaceleração) em vez de um único padrão repetido, para que
 // a música pareça ter estrutura, não um loop de treino.
 function section(startBeat, pattern, step = 1) {
-  return pattern.map((lane, i) => ({ lane, beat: startBeat + i * step }));
+  return pattern.map((lane, i) => ({
+    lane,
+    beat: startBeat + i * step,
+    duration: step,
+  }));
 }
 
-export const SONGS = [
+export const CAMPAIGN_SONGS = [
   {
     id: "facil",
     name: "Ritmo Fácil",
@@ -47,6 +52,72 @@ export const SONGS = [
   },
 ];
 
+// Faixas originais no estilo rock clássico (riff 4/4, pentatônico).
+// Não são gravações nem melodias de hits com copyright — só o clima
+// da época, compráveis com as notas ganhas no jogo.
+export const ROCK_LANE_FREQS = [164.81, 220.0, 246.94, 329.63];
+
+export const ROCK_SONGS = [
+  {
+    id: "rock-estrada",
+    name: "Estrada de Couro",
+    bpm: 118,
+    price: 60,
+    style: "rock",
+    freqs: ROCK_LANE_FREQS,
+    notes: [
+      ...section(0, [0, 0, 1, 0, 2, 0, 1, 0], 1),
+      ...section(8, [0, 1, 2, 1, 0, 1, 2, 3], 1),
+      ...section(16, [0, 2, 0, 2, 1, 3, 1, 3, 0, 2, 0, 2, 1, 3, 2, 0], 0.5),
+      ...section(24, [0, 0, 1, 2, 0, 3, 2, 1], 1),
+    ],
+  },
+  {
+    id: "rock-garagem",
+    name: "Noite na Garagem",
+    bpm: 126,
+    price: 90,
+    style: "rock",
+    freqs: ROCK_LANE_FREQS,
+    notes: [
+      ...section(0, [0, 2, 0, 2, 1, 3, 1, 3], 1),
+      ...section(8, [0, 0, 2, 3, 1, 1, 2, 0], 1),
+      ...section(16, [2, 0, 2, 0, 3, 1, 3, 1, 2, 0, 3, 1, 0, 2, 1, 3], 0.5),
+      ...section(24, [0, 1, 0, 3, 2, 1, 0, 0], 1),
+    ],
+  },
+  {
+    id: "rock-riff",
+    name: "Riff Elétrico",
+    bpm: 132,
+    price: 120,
+    style: "rock",
+    freqs: ROCK_LANE_FREQS,
+    notes: [
+      ...section(0, [0, 1, 0, 2, 0, 1, 3, 0], 1),
+      ...section(8, [0, 1, 2, 0, 1, 2, 3, 2, 0, 1, 2, 0, 1, 2, 3, 1], 0.5),
+      ...section(16, [3, 2, 1, 0, 0, 1, 2, 3], 1),
+      ...section(24, [0, 2, 1, 3, 0, 2, 1, 3, 2, 0, 3, 1, 2, 0, 3, 1], 0.5),
+      ...section(32, [0, 0, 3, 2, 1, 0], 1),
+    ],
+  },
+  {
+    id: "rock-asfalto",
+    name: "Solo do Asfalto",
+    bpm: 138,
+    price: 150,
+    style: "rock",
+    freqs: ROCK_LANE_FREQS,
+    notes: [
+      ...section(0, [3, 2, 3, 1, 3, 2, 0, 3], 1),
+      ...section(8, [3, 1, 2, 0, 3, 1, 2, 0, 3, 2, 1, 0, 3, 2, 1, 3], 0.5),
+      ...section(16, [0, 2, 3, 2, 0, 1, 3, 1], 1),
+      ...section(24, [3, 3, 2, 1, 0, 1, 2, 3, 0, 2, 3, 1, 0, 2, 3, 3], 0.5),
+      ...section(32, [3, 2, 1, 0, 0, 2, 3], 1),
+    ],
+  },
+];
+
 export const THEMES = [
   { id: "classico", name: "Clássico", price: 0, colors: ["#ff5f6d", "#4cc9f0", "#ffd166", "#06d6a0"] },
   { id: "sunset", name: "Pôr do Sol", price: 80, colors: ["#ff7b54", "#ffb26b", "#ffd56b", "#f27059"] },
@@ -66,6 +137,7 @@ export function buildChart(song) {
     .map((n) => ({
       lane: n.lane,
       hitTime: LEAD_IN_SECONDS + n.beat * beatDuration,
+      eighth: n.duration <= 0.5,
       judged: false,
       result: null,
     }))

@@ -1,5 +1,6 @@
 import {
-  LANE_COUNT, LANE_FREQS, LANE_KEYS, SONGS, THEMES,
+  LANE_COUNT, LANE_FREQS, LANE_KEYS, LANE_NOTE_NAMES,
+  CAMPAIGN_SONGS, ROCK_SONGS, THEMES,
   NOTE_TRAVEL_TIME, PERFECT_WINDOW, GOOD_WINDOW, MISS_WINDOW, buildChart,
   ENERGY_MAX, ENERGY_LOSS_PER_MISS, ENERGY_GAIN_PER_HIT,
 } from "./songs.js";
@@ -7,7 +8,13 @@ import {
 const STORAGE_KEY = "rhythm_beats_state";
 
 function defaultState() {
-  return { coins: 0, unlockedSongs: 1, ownedThemes: ["classico"], activeTheme: "classico" };
+  return {
+    coins: 0,
+    unlockedSongs: 1,
+    ownedThemes: ["classico"],
+    activeTheme: "classico",
+    ownedRockIds: [],
+  };
 }
 
 function loadState() {
@@ -21,6 +28,8 @@ function loadState() {
 }
 
 const state = loadState();
+if (!Array.isArray(state.ownedRockIds)) state.ownedRockIds = [];
+
 function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
@@ -56,37 +65,92 @@ function getAudioCtx() {
   return audioCtx;
 }
 
-function scheduleBlip(freq, when, accent = false) {
+function scheduleNote(freq, when, accent = false) {
+  const ctx = getAudioCtx();
+  const osc = ctx.createOscillator();
+  const harmonic = ctx.createOscillator();
+  const amp = ctx.createGain();
+  osc.type = "triangle";
+  harmonic.type = "sine";
+  osc.frequency.setValueAtTime(freq, when);
+  harmonic.frequency.setValueAtTime(freq * 2, when);
+  const peak = accent ? 0.22 : 0.16;
+  amp.gain.setValueAtTime(0.0001, when);
+  amp.gain.exponentialRampToValueAtTime(peak, when + 0.018);
+  amp.gain.exponentialRampToValueAtTime(0.0001, when + 0.38);
+  osc.connect(amp);
+  harmonic.connect(amp);
+  amp.connect(ctx.destination);
+  osc.start(when);
+  harmonic.start(when);
+  osc.stop(when + 0.42);
+  harmonic.stop(when + 0.42);
+}
+
+function laneFreqs() {
+  return currentSong?.freqs || LANE_FREQS;
+}
+
+function playJudgeSfx(type, lane = 0) {
+  const ctx = getAudioCtx();
+  const now = ctx.currentTime;
+  if (type === "miss") {
+    scheduleNote(160, now, false);
+    return;
+  }
+  const freq = laneFreqs()[lane] || 440;
+  scheduleNote(type === "perfect" ? freq * 1.01 : freq, now, type === "perfect");
+}
+
+function scheduleKick(when) {
   const ctx = getAudioCtx();
   const osc = ctx.createOscillator();
   const amp = ctx.createGain();
-  osc.type = accent ? "square" : "sine";
-  osc.frequency.setValueAtTime(freq, when);
-  amp.gain.setValueAtTime(0.001, when);
-  amp.gain.linearRampToValueAtTime(0.22, when + 0.01);
-  amp.gain.exponentialRampToValueAtTime(0.001, when + 0.14);
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(150, when);
+  osc.frequency.exponentialRampToValueAtTime(48, when + 0.11);
+  amp.gain.setValueAtTime(0.22, when);
+  amp.gain.exponentialRampToValueAtTime(0.0001, when + 0.16);
   osc.connect(amp).connect(ctx.destination);
   osc.start(when);
-  osc.stop(when + 0.16);
+  osc.stop(when + 0.18);
 }
 
-function playJudgeSfx(type) {
-  const ctx = getAudioCtx();
-  const now = ctx.currentTime;
-  if (type === "perfect") scheduleBlip(880, now, true);
-  else if (type === "good") scheduleBlip(660, now);
-  else if (type === "ok") scheduleBlip(440, now);
-  else scheduleBlip(160, now);
+function scheduleRockGroove(startAt, bpm, lastHitTime) {
+  const beat = 60 / bpm;
+  const end = startAt + lastHitTime + 0.4;
+  let t = startAt + 2.2;
+  let i = 0;
+  while (t < end) {
+    scheduleKick(t);
+    if (i % 2 === 1) scheduleNote(196, t, false);
+    t += beat;
+    i++;
+  }
 }
 
 // ---------- Menu ----------
+
+function isCampaignUnlocked(index) {
+  return index < state.unlockedSongs;
+}
+
+function isRockOwned(song) {
+  return state.ownedRockIds.includes(song.id);
+}
 
 function renderMenu() {
   document.getElementById("coins-value").textContent = String(state.coins);
   const list = document.getElementById("song-list");
   list.innerHTML = "";
-  SONGS.forEach((song, i) => {
-    const unlocked = i < state.unlockedSongs;
+
+  const campaignTitle = document.createElement("div");
+  campaignTitle.className = "list-heading";
+  campaignTitle.textContent = "Progresso";
+  list.appendChild(campaignTitle);
+
+  CAMPAIGN_SONGS.forEach((song, i) => {
+    const unlocked = isCampaignUnlocked(i);
     const btn = document.createElement("button");
     btn.className = "song-card" + (unlocked ? "" : " locked");
     btn.innerHTML = `
@@ -96,10 +160,37 @@ function renderMenu() {
         <span class="song-meta">${unlocked ? `${song.bpm} BPM · ${song.notes.length} notas` : "Complete a fase anterior para desbloquear"}</span>
       </span>
     `;
-    if (unlocked) btn.addEventListener("click", () => startSong(i));
+    if (unlocked) btn.addEventListener("click", () => startSong(song));
     else btn.disabled = true;
     list.appendChild(btn);
   });
+
+  const rockTitle = document.createElement("div");
+  rockTitle.className = "list-heading";
+  rockTitle.textContent = "Rock clássico";
+  list.appendChild(rockTitle);
+
+  const ownedRock = ROCK_SONGS.filter(isRockOwned);
+  if (ownedRock.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "list-empty";
+    empty.textContent = "Compre riffs na loja — só rock clássico.";
+    list.appendChild(empty);
+  } else {
+    for (const song of ownedRock) {
+      const btn = document.createElement("button");
+      btn.className = "song-card rock";
+      btn.innerHTML = `
+        <span class="song-icon">🎸</span>
+        <span class="song-info">
+          <span class="song-name">${song.name}</span>
+          <span class="song-meta">Rock clássico · ${song.bpm} BPM · ${song.notes.length} notas</span>
+        </span>
+      `;
+      btn.addEventListener("click", () => startSong(song));
+      list.appendChild(btn);
+    }
+  }
 }
 
 document.getElementById("btn-shop").addEventListener("click", () => {
@@ -114,6 +205,49 @@ document.getElementById("btn-shop-back").addEventListener("click", () => {
 // ---------- Loja de temas ----------
 
 function renderShop() {
+  document.getElementById("shop-coins").textContent = `🎵 ${state.coins}`;
+  const rockList = document.getElementById("rock-list");
+  rockList.innerHTML = "";
+  for (const song of ROCK_SONGS) {
+    const owned = isRockOwned(song);
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "theme-card";
+    card.innerHTML = `
+      <span class="song-icon">🎸</span>
+      <div class="theme-info">
+        <div class="theme-name">${song.name}</div>
+        <div class="song-meta">Rock clássico · ${song.bpm} BPM</div>
+      </div>
+    `;
+    const badge = document.createElement("span");
+    badge.className = "theme-badge";
+    if (owned) {
+      badge.textContent = "Jogar";
+      badge.classList.add("active-theme");
+    } else {
+      badge.textContent = `🎵 ${song.price}`;
+      if (state.coins < song.price) badge.classList.add("cant-afford");
+    }
+    card.appendChild(badge);
+    card.addEventListener("click", () => {
+      if (owned) {
+        startSong(song);
+        return;
+      }
+      if (state.coins < song.price) {
+        toast(`Faltam ${song.price - state.coins} 🎵 para "${song.name}".`);
+        return;
+      }
+      state.coins -= song.price;
+      state.ownedRockIds.push(song.id);
+      saveState();
+      toast(`"${song.name}" comprada!`);
+      renderShop();
+    });
+    rockList.appendChild(card);
+  }
+
   document.getElementById("shop-coins").textContent = `🎵 ${state.coins}`;
   const list = document.getElementById("theme-list");
   list.innerHTML = "";
@@ -208,7 +342,7 @@ function buildTapRow() {
   for (let i = 0; i < LANE_COUNT; i++) {
     const btn = document.createElement("button");
     btn.className = "tap-btn";
-    btn.textContent = LANE_KEYS[i];
+    btn.innerHTML = `<span class="tap-note">♪</span><span class="tap-name">${LANE_NOTE_NAMES[i]}</span><span class="tap-key">${LANE_KEYS[i]}</span>`;
     btn.style.background = currentTheme().colors[i] + "33";
     btn.style.color = currentTheme().colors[i];
     const press = (e) => {
@@ -266,7 +400,7 @@ function hitLane(lane) {
   maxCombo = Math.max(maxCombo, combo);
   energy = Math.min(ENERGY_MAX, energy + ENERGY_GAIN_PER_HIT);
   updateEnergyBar();
-  playJudgeSfx(result === "perfect" ? "perfect" : result === "good" ? "good" : "ok");
+  playJudgeSfx(result === "perfect" ? "perfect" : result === "good" ? "good" : "ok", lane);
   const labels = { perfect: "PERFEITO!", good: "BOA!", ok: "OK" };
   const colors = { perfect: "#ffd166", good: "#4cc9f0", ok: "#a0a0b0" };
   spawnPopup(lane, labels[result], colors[result]);
@@ -284,8 +418,8 @@ function spawnPopup(lane, text, color) {
   popups.push({ lane, text, color, born: performance.now() });
 }
 
-function startSong(index) {
-  currentSong = SONGS[index];
+function startSong(song) {
+  currentSong = song;
   chart = buildChart(currentSong);
   score = 0;
   combo = 0;
@@ -301,8 +435,13 @@ function startSong(index) {
     resizeCanvas();
     const ctx = getAudioCtx();
     songStartAudioTime = ctx.currentTime;
+    const freqs = laneFreqs();
     for (const note of chart) {
-      scheduleBlip(LANE_FREQS[note.lane], songStartAudioTime + note.hitTime);
+      scheduleNote(freqs[note.lane], songStartAudioTime + note.hitTime, note.eighth);
+    }
+    if (currentSong.style === "rock") {
+      const last = chart[chart.length - 1];
+      scheduleRockGroove(songStartAudioTime, currentSong.bpm, last ? last.hitTime : 8);
     }
     playing = true;
     updateHud();
@@ -335,9 +474,9 @@ function endSong(failedEarly = false) {
   // casual/não-punitivo do restante do jogo.
   const coinsEarned = failedEarly ? 15 : 30 + Math.round(accuracy * 60);
   state.coins += coinsEarned;
-  if (!failedEarly) {
-    const songIndex = SONGS.indexOf(currentSong);
-    if (songIndex + 1 >= state.unlockedSongs && songIndex + 1 < SONGS.length) {
+  if (!failedEarly && currentSong.style !== "rock") {
+    const songIndex = CAMPAIGN_SONGS.findIndex((s) => s.id === currentSong.id);
+    if (songIndex >= 0 && songIndex + 1 >= state.unlockedSongs && songIndex + 1 < CAMPAIGN_SONGS.length) {
       state.unlockedSongs = songIndex + 2;
       toast("Nova música desbloqueada!");
     }
@@ -353,12 +492,43 @@ function endSong(failedEarly = false) {
 }
 
 document.getElementById("btn-result-retry").addEventListener("click", () => {
-  startSong(SONGS.indexOf(currentSong));
+  startSong(currentSong);
 });
 document.getElementById("btn-result-menu").addEventListener("click", () => {
   showView("menu");
   renderMenu();
 });
+
+function drawMusicNote(ctx, x, y, color, eighth, scale) {
+  const s = scale;
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = color;
+  ctx.strokeStyle = color;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 11 * s, 8 * s, -0.45, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.lineWidth = Math.max(2, 2.6 * s);
+  ctx.beginPath();
+  ctx.moveTo(8.5 * s, -2 * s);
+  ctx.lineTo(8.5 * s, -28 * s);
+  ctx.stroke();
+
+  if (eighth) {
+    ctx.beginPath();
+    ctx.moveTo(8.5 * s, -28 * s);
+    ctx.bezierCurveTo(22 * s, -26 * s, 24 * s, -12 * s, 18 * s, -6 * s);
+    ctx.bezierCurveTo(20 * s, -16 * s, 14 * s, -22 * s, 8.5 * s, -18 * s);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  ctx.restore();
+}
 
 function drawPlayField() {
   const theme = currentTheme();
@@ -371,17 +541,39 @@ function drawPlayField() {
   ctx2d.clearRect(0, 0, canvasW, canvasH);
 
   for (let i = 0; i < LANE_COUNT; i++) {
-    ctx2d.fillStyle = i % 2 === 0 ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.015)";
+    ctx2d.fillStyle = i % 2 === 0 ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.02)";
     ctx2d.fillRect(i * laneW, 0, laneW, canvasH);
   }
 
-  ctx2d.strokeStyle = "rgba(255,255,255,0.35)";
+  ctx2d.strokeStyle = "rgba(255,255,255,0.12)";
+  ctx2d.lineWidth = 1;
+  const staffTop = hitLineY - 36;
+  for (let line = 0; line < 5; line++) {
+    const y = staffTop + line * 9;
+    ctx2d.beginPath();
+    ctx2d.moveTo(8, y);
+    ctx2d.lineTo(canvasW - 8, y);
+    ctx2d.stroke();
+  }
+
+  ctx2d.strokeStyle = "rgba(255,255,255,0.45)";
   ctx2d.lineWidth = 3;
   ctx2d.beginPath();
   ctx2d.moveTo(0, hitLineY);
   ctx2d.lineTo(canvasW, hitLineY);
   ctx2d.stroke();
 
+  ctx2d.font = "bold 11px sans-serif";
+  ctx2d.textAlign = "center";
+  ctx2d.textBaseline = "top";
+  for (let i = 0; i < LANE_COUNT; i++) {
+    ctx2d.fillStyle = theme.colors[i];
+    ctx2d.globalAlpha = 0.7;
+    ctx2d.fillText(LANE_NOTE_NAMES[i], i * laneW + laneW / 2, 8);
+  }
+  ctx2d.globalAlpha = 1;
+
+  const noteScale = Math.min(1.15, Math.max(0.75, laneW / 78));
   for (const note of chart) {
     if (note.judged) continue;
     const spawnTime = note.hitTime - NOTE_TRAVEL_TIME;
@@ -389,11 +581,7 @@ function drawPlayField() {
     if (progress < -0.05 || progress > 1.25) continue;
     const y = progress * hitLineY;
     const x = note.lane * laneW + laneW / 2;
-    ctx2d.fillStyle = theme.colors[note.lane];
-    ctx2d.beginPath();
-    const r = laneW * 0.22;
-    ctx2d.roundRect ? ctx2d.roundRect(x - r, y - r * 0.6, r * 2, r * 1.2, 8) : ctx2d.rect(x - r, y - r * 0.6, r * 2, r * 1.2);
-    ctx2d.fill();
+    drawMusicNote(ctx2d, x, y, theme.colors[note.lane], note.eighth, noteScale);
   }
 
   const now = performance.now();
