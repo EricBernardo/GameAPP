@@ -1,6 +1,7 @@
 import { TILE, PALETTE, AVATAR_COLORS, COLS, ROWS, emptyGrid, BUILTIN_LEVELS } from "./tiles.js";
 import { Character, findStart } from "./physics.js";
 import { unlockAudio, sfx } from "./audio.js";
+import { validateLevelName } from "./moderation.js";
 
 const STORAGE_KEY = "ugc_levels";
 const AVATAR_KEY = "ugc_avatar_color";
@@ -395,7 +396,13 @@ document.getElementById("btn-name-confirm").addEventListener("click", () => {
     toast("Adicione um Início 🚩 e um Fim 🏁 antes de salvar.");
     return;
   }
-  const name = document.getElementById("input-level-name").value.trim() || "Fase sem nome";
+  const rawName = document.getElementById("input-level-name").value;
+  const validation = validateLevelName(rawName);
+  if (!validation.valid) {
+    toast(validation.reason);
+    return;
+  }
+  const name = validation.name;
   const levels = loadUserLevels();
   const newLevel = { id: `user-${Date.now()}`, name, builtin: false, grid: editorGrid.map((row) => row.slice()) };
   levels.push(newLevel);
