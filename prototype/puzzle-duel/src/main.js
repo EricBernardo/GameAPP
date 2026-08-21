@@ -61,7 +61,52 @@ function saveCoins(key, value) {
   }
 }
 
+function loadJson(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    return JSON.parse(raw) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function saveJson(key, value) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // storage indisponível — segue sem persistir.
+  }
+}
+
 let totalCoins = loadCoins("pd_coins");
+
+const BOOSTERS = [
+  { id: "reshuffle", name: "Embaralhar", icon: "🔀", price: 15, desc: "Troca todo o tabuleiro por um novo, sem combinações prontas." },
+  { id: "time", name: "+10 segundos", icon: "⏱️", price: 15, desc: "Adiciona 10 segundos ao cronômetro da partida." },
+  { id: "bomb", name: "Bomba 3x3", icon: "💣", price: 25, desc: "Explode uma área 3x3 aleatória do tabuleiro, pontuando as peças." },
+];
+let boosterCounts = loadJson("pd_boosters", { reshuffle: 0, time: 0, bomb: 0 });
+if (!boosterCounts || typeof boosterCounts !== "object") boosterCounts = { reshuffle: 0, time: 0, bomb: 0 };
+for (const b of BOOSTERS) if (!Number.isFinite(boosterCounts[b.id])) boosterCounts[b.id] = 0;
+
+function refreshCoinDisplays() {
+  const startEl = document.getElementById("start-coins-value");
+  const shopEl = document.getElementById("shop-coins-value");
+  if (startEl) startEl.textContent = String(totalCoins);
+  if (shopEl) shopEl.textContent = String(totalCoins);
+}
+
+function refreshBoosterButtons() {
+  for (const b of BOOSTERS) {
+    const btn = document.getElementById(`booster-${b.id}`);
+    if (!btn) continue;
+    btn.querySelector(".booster-count").textContent = String(boosterCounts[b.id]);
+    btn.disabled = boosterCounts[b.id] <= 0;
+  }
+}
+refreshCoinDisplays();
+refreshBoosterButtons();
 
 const particles = [];
 
@@ -204,6 +249,7 @@ function endMatch() {
   const earned = won ? 40 : 15;
   totalCoins += earned;
   saveCoins("pd_coins", totalCoins);
+  refreshCoinDisplays();
 
   endTitle.textContent = won ? "VITÓRIA!" : "QUASE LÁ!";
   endSubtitle.textContent = won
@@ -416,6 +462,90 @@ document.getElementById("btn-restart").addEventListener("click", () => {
   startMatch();
   screenEnd.classList.add("hidden");
   running = true;
+});
+
+// ---------- Boosters (uso durante a partida) ----------
+
+function useBooster(id) {
+  if (!running || phase !== "idle") return;
+  if (boosterCounts[id] <= 0) return;
+
+  if (id === "reshuffle") {
+    tiles = createInitialBoard();
+    selected = null;
+    showCombo(0);
+  } else if (id === "time") {
+    timeLeft += 10;
+  } else if (id === "bomb") {
+    const r0 = Math.floor(Math.random() * (ROWS - 2));
+    const c0 = Math.floor(Math.random() * (COLS - 2));
+    const matched = Array.from({ length: ROWS }, () => new Array(COLS).fill(false));
+    for (let r = r0; r < r0 + 3; r++) {
+      for (let c = c0; c < c0 + 3; c++) matched[r][c] = true;
+    }
+    phase = "resolving";
+    resolveWave(matched);
+  }
+
+  boosterCounts[id] -= 1;
+  saveJson("pd_boosters", boosterCounts);
+  refreshBoosterButtons();
+}
+
+for (const b of BOOSTERS) {
+  const btn = document.getElementById(`booster-${b.id}`);
+  if (btn) btn.addEventListener("click", () => useBooster(b.id));
+}
+
+// ---------- Loja de boosters ----------
+
+const screenShop = document.getElementById("screen-shop");
+let shopReturnScreen = screenStart;
+
+function renderBoosterShop() {
+  refreshCoinDisplays();
+  const list = document.getElementById("booster-shop-list");
+  list.innerHTML = "";
+  for (const b of BOOSTERS) {
+    const card = document.createElement("div");
+    card.className = "booster-shop-card";
+    card.innerHTML = `
+      <span class="booster-shop-icon">${b.icon}</span>
+      <span class="booster-shop-info">
+        <span class="booster-shop-name">${b.name}</span>
+        <span class="booster-shop-desc">${b.desc}</span>
+        <span class="booster-shop-owned">Você tem: ${boosterCounts[b.id]}</span>
+      </span>
+    `;
+    const buyBtn = document.createElement("button");
+    buyBtn.textContent = `🪙 ${b.price}`;
+    buyBtn.disabled = totalCoins < b.price;
+    buyBtn.addEventListener("click", () => {
+      if (totalCoins < b.price) return;
+      totalCoins -= b.price;
+      boosterCounts[b.id] += 1;
+      saveCoins("pd_coins", totalCoins);
+      saveJson("pd_boosters", boosterCounts);
+      refreshBoosterButtons();
+      renderBoosterShop();
+    });
+    card.appendChild(buyBtn);
+    list.appendChild(card);
+  }
+}
+
+function openShop(fromScreen) {
+  shopReturnScreen = fromScreen;
+  fromScreen.classList.add("hidden");
+  renderBoosterShop();
+  screenShop.classList.remove("hidden");
+}
+
+document.getElementById("btn-shop").addEventListener("click", () => openShop(screenStart));
+document.getElementById("btn-shop-from-end").addEventListener("click", () => openShop(screenEnd));
+document.getElementById("btn-shop-back").addEventListener("click", () => {
+  screenShop.classList.add("hidden");
+  shopReturnScreen.classList.remove("hidden");
 });
 
 requestAnimationFrame((t) => {

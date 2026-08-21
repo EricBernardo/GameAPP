@@ -37,7 +37,9 @@
     <div id="screen-start" class="screen">
       <h1>PARTY ROYALE</h1>
       <p class="subtitle">Protótipo de conceito — último na arena vence</p>
+      <div id="start-coins-pill">🪙 <span id="start-coins-value">0</span></div>
       <button id="btn-play" class="btn-primary">JOGAR</button>
+      <button id="btn-shop" class="btn-secondary">🎨 LOJA DE SKINS</button>
       <p class="hint">
         Celular: arraste no joystick para se mover, toque em DASH para empurrar.<br />
         Computador: setas/WASD para mover, ESPAÇO para dash.
@@ -49,6 +51,14 @@
       <p id="end-subtitle" class="subtitle">Você foi o último a cair.</p>
       <p id="end-coins" class="coins-earned">+0 🪙</p>
       <button id="btn-restart" class="btn-primary">JOGAR DE NOVO</button>
+      <button id="btn-shop-from-end" class="btn-secondary">🎨 LOJA DE SKINS</button>
+    </div>
+
+    <div id="screen-shop" class="screen hidden">
+      <h1>LOJA DE SKINS</h1>
+      <div id="shop-coins-pill">🪙 <span id="shop-coins-value">0</span></div>
+      <div id="skin-list"></div>
+      <button id="btn-shop-back" class="btn-primary">VOLTAR</button>
     </div>
   </div>
 

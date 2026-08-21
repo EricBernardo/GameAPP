@@ -37,10 +37,24 @@
       <canvas id="board"></canvas>
     </div>
 
+    <div id="booster-row">
+      <button class="booster-btn" id="booster-reshuffle" data-booster="reshuffle">
+        <span class="booster-icon">🔀</span><span class="booster-count">0</span>
+      </button>
+      <button class="booster-btn" id="booster-time" data-booster="time">
+        <span class="booster-icon">⏱️</span><span class="booster-count">0</span>
+      </button>
+      <button class="booster-btn" id="booster-bomb" data-booster="bomb">
+        <span class="booster-icon">💣</span><span class="booster-count">0</span>
+      </button>
+    </div>
+
     <div id="screen-start" class="screen">
       <h1>PUZZLE DUELO</h1>
       <p class="subtitle">Protótipo do Conceito B — combine 3 ou mais e vença a pontuação do seu rival antes do tempo acabar</p>
+      <div id="start-coins-pill">🪙 <span id="start-coins-value">0</span></div>
       <button id="btn-play" class="btn-primary">JOGAR</button>
+      <button id="btn-shop" class="btn-secondary">🧰 LOJA DE BOOSTERS</button>
       <p class="hint">Toque em uma peça e depois em uma vizinha para trocar.<br />Combos em cadeia valem mais pontos.</p>
     </div>
 
@@ -49,6 +63,14 @@
       <p id="end-subtitle" class="subtitle">Você venceu o duelo.</p>
       <p id="end-score" class="coins-earned">0 pontos</p>
       <button id="btn-restart" class="btn-primary">JOGAR DE NOVO</button>
+      <button id="btn-shop-from-end" class="btn-secondary">🧰 LOJA DE BOOSTERS</button>
+    </div>
+
+    <div id="screen-shop" class="screen hidden">
+      <h1>LOJA DE BOOSTERS</h1>
+      <div id="shop-coins-pill">🪙 <span id="shop-coins-value">0</span></div>
+      <div id="booster-shop-list"></div>
+      <button id="btn-shop-back" class="btn-primary">VOLTAR</button>
     </div>
   </div>
 
