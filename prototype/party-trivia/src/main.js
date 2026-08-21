@@ -64,6 +64,8 @@ function renderPlayerInputs() {
       const del = document.createElement("button");
       del.textContent = "✕";
       del.addEventListener("click", () => {
+        const currentName = names[i].trim();
+        if (currentName && !window.confirm(`Remover "${currentName}" da partida?`)) return;
         names.splice(i, 1);
         renderPlayerInputs();
       });
