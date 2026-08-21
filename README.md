@@ -2,9 +2,10 @@
 
 Repositório de exploração de um jogo mobile (Android/iOS) com potencial de popularidade entre o público jovem: uma auditoria de mercado seguida de protótipos jogáveis (web) de cada conceito avaliado.
 
-## Auditoria
+## Auditorias
 
 - [`docs/auditoria-jogo-mobile-jovens.md`](docs/auditoria-jogo-mobile-jovens.md) — panorama de mercado 2025–2026, benchmark de concorrentes, riscos regulatórios (Lei Felca/COPPA), escolha de motor, monetização, e 7 conceitos de jogo propostos (A–G) com matriz de priorização.
+- [`docs/auditoria-qualidade-prototipos.md`](docs/auditoria-qualidade-prototipos.md) — auditoria de qualidade da execução dos 7 protótipos já construídos, com 4 lentes especializadas (design/diversão, monetização/LiveOps, UX/acessibilidade, arquitetura técnica), tabela de notas consolidada e roteiro de correções priorizado.
 
 ## Protótipos jogáveis
 
