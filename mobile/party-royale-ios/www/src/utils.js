@@ -18,6 +18,18 @@ export function choice(list) {
   return list[Math.floor(Math.random() * list.length)];
 }
 
+// Fisher-Yates — embaralhamento sem viés (diferente de
+// `sort(() => Math.random() - 0.5)`, que distribui posições de forma
+// desigual e não é uma permutação uniforme de verdade).
+export function shuffle(list) {
+  const copy = [...list];
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
 export const PALETTE = [
   "#ff5f6d", "#4cc9f0", "#ffd166", "#06d6a0",
   "#c77dff", "#ff9f1c", "#5390d9", "#f15bb5",

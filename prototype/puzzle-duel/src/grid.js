@@ -21,7 +21,30 @@ export function makeTile(type, row, col, spawnFromRow = row) {
     col,
     visRow: spawnFromRow,
     visCol: col,
+    // Peça congelada: sobrevive à primeira combinação que a envolve
+    // (só perde o gelo), precisando de uma segunda combinação para
+    // ser removida de fato — variedade de conteúdo além do 8x8 puro.
+    iceLevel: 0,
   };
+}
+
+// Congela algumas células aleatórias do tabuleiro (fora das 2 primeiras
+// e 2 últimas colunas/linhas, para não travar cantos difíceis de alcançar).
+export function applyRandomIce(tiles, count) {
+  const candidates = [];
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      candidates.push({ r, c });
+    }
+  }
+  for (let i = candidates.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  }
+  for (let i = 0; i < Math.min(count, candidates.length); i++) {
+    const { r, c } = candidates[i];
+    if (tiles[r][c]) tiles[r][c].iceLevel = 1;
+  }
 }
 
 // Preenche o tabuleiro evitando combinações já formadas na criação,

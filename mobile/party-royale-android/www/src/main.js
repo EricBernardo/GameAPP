@@ -4,12 +4,37 @@ import {
   Player, Obstacle, ParticleSystem, resolvePlayerCollision,
   MOVE_ACCEL, MAX_SPEED, FRICTION,
 } from "./entities.js";
-import { clamp, distance, randRange, choice, PALETTE } from "./utils.js";
+import { clamp, distance, randRange, choice, shuffle, PALETTE } from "./utils.js";
 import { SKINS, DEFAULT_SKIN_ID, skinById } from "./skins.js";
 
 const BOT_NAMES = [
   "Nino", "Zaza", "Kiko", "Miu", "Tuko", "Vex", "Loro", "Bibi",
   "Yumi", "Rex", "Pipa", "Doka", "Fofo", "Zumi", "Kaz", "Wex",
+];
+
+// Variedade de conteúdo (Fase 3 da auditoria de qualidade): mais de um
+// layout de arena, sorteado a cada partida, para que a sessão 4 não
+// pareça idêntica à sessão 1.
+const ARENA_LAYOUTS = [
+  {
+    name: "Clássica",
+    obstacles: [
+      { lengthFactor: 0.42, speed: 0.9, phase: 0 },
+      { lengthFactor: 0.3, speed: -1.4, phase: Math.PI / 2 },
+    ],
+  },
+  {
+    name: "Caos Triplo",
+    obstacles: [
+      { lengthFactor: 0.36, speed: 1.3, phase: 0 },
+      { lengthFactor: 0.36, speed: -1.3, phase: (2 * Math.PI) / 3 },
+      { lengthFactor: 0.36, speed: 1.6, phase: (4 * Math.PI) / 3 },
+    ],
+  },
+  {
+    name: "Campo Aberto",
+    obstacles: [],
+  },
 ];
 
 const TOTAL_PLAYERS = 8;
@@ -109,6 +134,7 @@ let graceEndAnnounced = false;
 let running = false;
 let shakeTime = 0;
 let shakeMag = 0;
+let currentLayoutName = "";
 
 function resize() {
   canvas.width = window.innerWidth * devicePixelRatio;
@@ -144,8 +170,8 @@ function spawnMatch() {
   matchTime = 0;
   graceEndAnnounced = false;
 
-  const shuffledNames = [...BOT_NAMES].sort(() => Math.random() - 0.5);
-  const shuffledColors = [...PALETTE].sort(() => Math.random() - 0.5);
+  const shuffledNames = shuffle(BOT_NAMES);
+  const shuffledColors = shuffle(PALETTE);
 
   for (let i = 0; i < TOTAL_PLAYERS; i++) {
     const angle = (Math.PI * 2 * i) / TOTAL_PLAYERS;
@@ -163,8 +189,16 @@ function spawnMatch() {
     if (!isBot) human = p;
   }
 
-  obstacles.push(new Obstacle({ x: arena.x, y: arena.y, length: ARENA_MAX * 0.42, speed: 0.9, phase: 0 }));
-  obstacles.push(new Obstacle({ x: arena.x, y: arena.y, length: ARENA_MAX * 0.3, speed: -1.4, phase: Math.PI / 2 }));
+  const layout = choice(ARENA_LAYOUTS);
+  currentLayoutName = layout.name;
+  for (const spec of layout.obstacles) {
+    obstacles.push(new Obstacle({
+      x: arena.x, y: arena.y,
+      length: ARENA_MAX * spec.lengthFactor,
+      speed: spec.speed,
+      phase: spec.phase,
+    }));
+  }
 }
 
 function updateBot(p, dt) {
@@ -522,14 +556,14 @@ document.getElementById("btn-play").addEventListener("click", () => {
   spawnMatch();
   screenStart.classList.add("hidden");
   running = true;
-  showToast("Prepare-se!");
+  showToast(`Prepare-se! Arena: ${currentLayoutName}`);
 });
 
 document.getElementById("btn-restart").addEventListener("click", () => {
   spawnMatch();
   screenEnd.classList.add("hidden");
   running = true;
-  showToast("Prepare-se!");
+  showToast(`Prepare-se! Arena: ${currentLayoutName}`);
 });
 
 requestAnimationFrame((t) => {

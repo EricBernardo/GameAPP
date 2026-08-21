@@ -1,5 +1,6 @@
 import { TILE, PALETTE, AVATAR_COLORS, COLS, ROWS, emptyGrid, BUILTIN_LEVELS } from "./tiles.js";
 import { Character, findStart } from "./physics.js";
+import { unlockAudio, sfx } from "./audio.js";
 
 const STORAGE_KEY = "ugc_levels";
 const AVATAR_KEY = "ugc_avatar_color";
@@ -246,6 +247,23 @@ function drawTile(ctx, type, x, y, size) {
       ctx.fillRect(x + size * 0.3, y + size * 0.2, size * 0.05, size * 0.6);
       ctx.fillRect(x + size * 0.35, y + size * 0.2, size * 0.35, size * 0.2);
       break;
+    case TILE.MOVING_PLATFORM:
+      ctx.fillStyle = "#9d4edd";
+      ctx.fillRect(x + pad, y + size * 0.4, size - pad * 2, size * 0.22);
+      ctx.fillStyle = "rgba(255,255,255,0.85)";
+      ctx.beginPath();
+      ctx.moveTo(x + size * 0.18, y + size * 0.5);
+      ctx.lineTo(x + size * 0.3, y + size * 0.38);
+      ctx.lineTo(x + size * 0.3, y + size * 0.62);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(x + size * 0.82, y + size * 0.5);
+      ctx.lineTo(x + size * 0.7, y + size * 0.38);
+      ctx.lineTo(x + size * 0.7, y + size * 0.62);
+      ctx.closePath();
+      ctx.fill();
+      break;
     default:
       break;
   }
@@ -406,6 +424,49 @@ let deaths = 0;
 let currentPlayLevel = null;
 const input = { moveX: 0, jumpPressed: false };
 let playRunning = false;
+let platforms = [];
+let matchElapsed = 0;
+const particles = [];
+
+function burstParticles(cx, cy, color, count = 12) {
+  for (let i = 0; i < count; i++) {
+    const angle = (Math.PI * 2 * i) / count + Math.random() * 0.3;
+    const speed = 90 + Math.random() * 100;
+    particles.push({
+      x: cx, y: cy,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      life: 0.3 + Math.random() * 0.2,
+      age: 0,
+      color,
+      size: 3 + Math.random() * 3,
+    });
+  }
+}
+
+function extractPlatforms(grid) {
+  const found = [];
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (grid[r][c] === TILE.MOVING_PLATFORM) {
+        grid[r][c] = TILE.EMPTY;
+        const rangeCells = Math.min(3, COLS - 1 - c, c);
+        found.push({
+          homeX: c * playCellSize,
+          y: r * playCellSize + playCellSize * 0.4,
+          width: playCellSize,
+          height: playCellSize * 0.22,
+          rangeCells: Math.max(1, rangeCells),
+          phase: Math.random() * Math.PI * 2,
+          speed: 1.1,
+          x: c * playCellSize,
+          vx: 0,
+        });
+      }
+    }
+  }
+  return found;
+}
 
 function resizePlayCanvas() {
   const wrap = document.getElementById("canvas-wrap-play");
@@ -423,15 +484,19 @@ function resizePlayCanvas() {
 }
 
 function openPlay(level) {
+  unlockAudio();
   currentPlayLevel = level;
   playGrid = level.grid.map((row) => row.slice());
   coinsCollected = 0;
   deaths = 0;
+  matchElapsed = 0;
+  particles.length = 0;
   document.getElementById("play-coins").textContent = "0";
   document.getElementById("play-deaths").textContent = "0";
   showView("play");
   requestAnimationFrame(() => {
     resizePlayCanvas();
+    platforms = extractPlatforms(playGrid);
     const spawn = findStart(playGrid, playCellSize);
     character = new Character(playCellSize, spawn);
     playRunning = true;
@@ -492,6 +557,22 @@ function drawPlay() {
     }
   }
 
+  for (const platform of platforms) {
+    ctx.fillStyle = "#9d4edd";
+    ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
+    ctx.fillStyle = "rgba(255,255,255,0.4)";
+    ctx.fillRect(platform.x, platform.y, platform.width, platform.height * 0.35);
+  }
+
+  for (const p of particles) {
+    ctx.globalAlpha = Math.max(0, 1 - p.age / p.life);
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
   if (character) {
     ctx.save();
     if (character.invulnerable > 0 && Math.floor(character.invulnerable * 20) % 2 === 0) {
@@ -536,24 +617,55 @@ function loop(now) {
   lastTime = now;
 
   if (playRunning && character) {
+    matchElapsed += dt;
+    for (const platform of platforms) {
+      const prevX = platform.x;
+      platform.x = platform.homeX + Math.sin(matchElapsed * platform.speed + platform.phase) * (platform.rangeCells * playCellSize);
+      platform.vx = (platform.x - prevX) / dt;
+    }
+
     const currentInput = readInput();
     const events = {};
-    character.update(dt, playGrid, currentInput, events);
+    character.update(dt, playGrid, currentInput, events, platforms);
 
+    if (events.jumped) sfx.jump();
     if (events.collectedCoin) {
       const { row, col } = events.collectedCoin;
       playGrid[row][col] = TILE.EMPTY;
       coinsCollected++;
       document.getElementById("play-coins").textContent = String(coinsCollected);
+      sfx.coin();
+      burstParticles(col * playCellSize + playCellSize / 2, row * playCellSize + playCellSize / 2, "#ffd166", 10);
+    }
+    if (events.sprung) {
+      sfx.spring();
+      burstParticles(character.x + character.width / 2, character.y + character.height, "#ff9f1c", 10);
     }
     if (events.hitHazard || events.fellOff) {
       deaths++;
       document.getElementById("play-deaths").textContent = String(deaths);
+      sfx.hazard();
+      burstParticles(character.x + character.width / 2, character.y + character.height / 2, "#e63946", 16);
       character.respawn();
     }
     if (events.reachedGoal) {
+      sfx.goal();
+      burstParticles(character.x + character.width / 2, character.y + character.height / 2, "#4cc9f0", 24);
       completeLevel();
     }
+  }
+
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.age += dt;
+    if (p.age >= p.life) {
+      particles.splice(i, 1);
+      continue;
+    }
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.vx *= 0.92;
+    p.vy *= 0.92;
   }
 
   if (!views.play.classList.contains("hidden")) drawPlay();

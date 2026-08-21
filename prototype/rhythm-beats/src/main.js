@@ -1,6 +1,7 @@
 import {
   LANE_COUNT, LANE_FREQS, LANE_KEYS, SONGS, THEMES,
   NOTE_TRAVEL_TIME, PERFECT_WINDOW, GOOD_WINDOW, MISS_WINDOW, buildChart,
+  ENERGY_MAX, ENERGY_LOSS_PER_MISS, ENERGY_GAIN_PER_HIT,
 } from "./songs.js";
 
 const STORAGE_KEY = "rhythm_beats_state";
@@ -74,6 +75,7 @@ function playJudgeSfx(type) {
   const now = ctx.currentTime;
   if (type === "perfect") scheduleBlip(880, now, true);
   else if (type === "good") scheduleBlip(660, now);
+  else if (type === "ok") scheduleBlip(440, now);
   else scheduleBlip(160, now);
 }
 
@@ -91,7 +93,7 @@ function renderMenu() {
       <span class="song-icon">${unlocked ? "🎵" : "🔒"}</span>
       <span class="song-info">
         <span class="song-name">${unlocked ? song.name : "???"}</span>
-        <span class="song-meta">${unlocked ? `${song.bpm} BPM · ${song.lanes.length} notas` : "Complete a fase anterior para desbloquear"}</span>
+        <span class="song-meta">${unlocked ? `${song.bpm} BPM · ${song.notes.length} notas` : "Complete a fase anterior para desbloquear"}</span>
       </span>
     `;
     if (unlocked) btn.addEventListener("click", () => startSong(i));
@@ -165,7 +167,9 @@ let playing = false;
 let score = 0;
 let combo = 0;
 let maxCombo = 0;
-let counts = { perfect: 0, good: 0, miss: 0 };
+let counts = { perfect: 0, good: 0, ok: 0, miss: 0 };
+let energy = ENERGY_MAX;
+let failed = false;
 const popups = [];
 let canvasW = 0;
 let canvasH = 0;
@@ -232,21 +236,36 @@ function hitLane(lane) {
   let result;
   if (diff <= PERFECT_WINDOW) result = "perfect";
   else if (diff <= GOOD_WINDOW) result = "good";
-  else result = "good";
+  else result = "ok";
   note.result = result;
 
+  const multiplier = 1 + Math.min(4, Math.floor(combo / 10)) * 0.1;
   if (result === "perfect") {
     counts.perfect++;
-    combo++;
-    score += 100 * (1 + Math.min(4, Math.floor(combo / 10)) * 0.1);
-  } else {
+    score += 100 * multiplier;
+  } else if (result === "good") {
     counts.good++;
-    combo++;
-    score += 50 * (1 + Math.min(4, Math.floor(combo / 10)) * 0.1);
+    score += 50 * multiplier;
+  } else {
+    counts.ok++;
+    score += 20 * multiplier;
   }
+  combo++;
   maxCombo = Math.max(maxCombo, combo);
-  playJudgeSfx(result);
-  spawnPopup(lane, result === "perfect" ? "PERFEITO!" : "BOA!", result === "perfect" ? "#ffd166" : "#4cc9f0");
+  energy = Math.min(ENERGY_MAX, energy + ENERGY_GAIN_PER_HIT);
+  updateEnergyBar();
+  playJudgeSfx(result === "perfect" ? "perfect" : result === "good" ? "good" : "ok");
+  const labels = { perfect: "PERFEITO!", good: "BOA!", ok: "OK" };
+  const colors = { perfect: "#ffd166", good: "#4cc9f0", ok: "#a0a0b0" };
+  spawnPopup(lane, labels[result], colors[result]);
+}
+
+function updateEnergyBar() {
+  const fill = document.getElementById("energy-fill");
+  if (!fill) return;
+  const pct = Math.max(0, (energy / ENERGY_MAX) * 100);
+  fill.style.width = `${pct}%`;
+  fill.classList.toggle("low", pct <= 30);
 }
 
 function spawnPopup(lane, text, color) {
@@ -259,10 +278,13 @@ function startSong(index) {
   score = 0;
   combo = 0;
   maxCombo = 0;
-  counts = { perfect: 0, good: 0, miss: 0 };
+  counts = { perfect: 0, good: 0, ok: 0, miss: 0 };
+  energy = ENERGY_MAX;
+  failed = false;
   popups.length = 0;
   showView("play");
   buildTapRow();
+  updateEnergyBar();
   requestAnimationFrame(() => {
     resizeCanvas();
     const ctx = getAudioCtx();
@@ -286,28 +308,34 @@ function updateHud() {
   document.getElementById("hud-combo").textContent = combo > 1 ? `combo x${combo}` : "";
 }
 
-function endSong() {
+function endSong(failedEarly = false) {
   playing = false;
+  failed = failedEarly;
   const total = chart.length;
-  const accuracy = total > 0 ? (counts.perfect * 100 + counts.good * 60) / (total * 100) : 0;
+  const accuracy = total > 0 ? (counts.perfect * 100 + counts.good * 60 + counts.ok * 30) / (total * 100) : 0;
   let grade = "D";
   if (accuracy >= 0.95) grade = "S";
   else if (accuracy >= 0.85) grade = "A";
   else if (accuracy >= 0.7) grade = "B";
   else if (accuracy >= 0.5) grade = "C";
 
-  const coinsEarned = 30 + Math.round(accuracy * 60);
+  // Participação sempre rende algo, mesmo falhando — mantém o tom
+  // casual/não-punitivo do restante do jogo.
+  const coinsEarned = failedEarly ? 15 : 30 + Math.round(accuracy * 60);
   state.coins += coinsEarned;
-  const songIndex = SONGS.indexOf(currentSong);
-  if (songIndex + 1 >= state.unlockedSongs && songIndex + 1 < SONGS.length) {
-    state.unlockedSongs = songIndex + 2;
-    toast("Nova música desbloqueada!");
+  if (!failedEarly) {
+    const songIndex = SONGS.indexOf(currentSong);
+    if (songIndex + 1 >= state.unlockedSongs && songIndex + 1 < SONGS.length) {
+      state.unlockedSongs = songIndex + 2;
+      toast("Nova música desbloqueada!");
+    }
   }
   saveState();
 
-  document.getElementById("result-grade").textContent = grade;
-  document.getElementById("result-stats").textContent =
-    `${Math.round(accuracy * 100)}% de acerto · ${counts.perfect} perfeitos, ${counts.good} bons, ${counts.miss} perdidos · combo máx. x${maxCombo}`;
+  document.getElementById("result-grade").textContent = failedEarly ? "😵" : grade;
+  document.getElementById("result-stats").textContent = failedEarly
+    ? `Energia esgotada! ${counts.perfect} perfeitos, ${counts.good} bons, ${counts.ok} OKs, ${counts.miss} perdidos — tente de novo.`
+    : `${Math.round(accuracy * 100)}% de acerto · ${counts.perfect} perfeitos, ${counts.good} bons, ${counts.ok} OKs, ${counts.miss} perdidos · combo máx. x${maxCombo}`;
   document.getElementById("result-coins").textContent = `+${coinsEarned} 🎵`;
   showView("result");
 }
@@ -386,13 +414,19 @@ function loop() {
         note.result = "miss";
         counts.miss++;
         combo = 0;
+        energy = Math.max(0, energy - ENERGY_LOSS_PER_MISS);
+        updateEnergyBar();
         spawnPopup(note.lane, "FALTOU", "#ff5f6d");
       }
     }
     updateHud();
 
+    if (energy <= 0 && playing) {
+      endSong(true);
+    }
+
     const lastNote = chart[chart.length - 1];
-    if (lastNote && t > lastNote.hitTime + NOTE_TRAVEL_TIME + 0.5) {
+    if (!failed && lastNote && t > lastNote.hitTime + NOTE_TRAVEL_TIME + 0.5) {
       endSong();
     }
   }

@@ -152,6 +152,25 @@ html, body {
   gap: 10px;
 }
 
+#energy-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+#energy-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, #06d6a0, #ffd166);
+  transition: width 0.2s ease, background 0.2s ease;
+}
+
+#energy-fill.low {
+  background: linear-gradient(90deg, #ff5f6d, #f72585);
+}
+
 .hud-pill {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 999px;
